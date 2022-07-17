@@ -1,0 +1,4 @@
+"0","```r
+chisq.test(x,correct=T) #(com correÃ§Ã£o de continuidade)
+chisq.test(x,correct=F) #(sem correÃ§Ã£o de continuidade)
+```"

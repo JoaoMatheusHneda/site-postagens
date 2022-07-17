@@ -1,0 +1,1315 @@
+---
+title: "<center> Geração de relatórios e apresentações com R </center>"
+subtitle: "<center> Aplicação prática no contexto de ocorrências aeronáuticas `r if (knitr::is_html_output()) { eval(substitute('&#9992;&#128641;'))}` </center>"
+author: "<center> João Matheus Slujala Krüger Taborda Hneda </center>"
+date: "<center> 19/06/2022 </center>" 
+geometry: "left=0.9cm,right=0.9cm,top=0.7cm,bottom=1.5cm"
+output:
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 5
+    keep_tex: yes
+    number_sections: no
+  html_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    number_sections: yes
+    highlight: default # "default", "tango", "pygments", "kate",  "monochrome", "espresso", "zenburn", "haddock", "textmate"
+    theme: flatly # default, cerulean, journal, flatly, readable, spacelab, united, cosmo, lumen, paper, sandstone, simplex, yeti
+lang: pt-br
+always_allow_html: yes
+header-includes: \usepackage{fancyhdr}
+toc-title: Sumário
+---
+
+\newpage
+
+```{r, global_options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align="center"
+                      #,tidy.opts = list(width.cutoff = 80), tidy = FALSE # (to wrap the lines of code blocks)
+)
+```
+
+# Introdução
+
+Quando o assunto é aviação civil e transporte aéreo, vários eventos ou intercorrências podem ocorrer pelo percurso. Formalmente falando, esses eventos podem ser chamados de ocorrências aeronáuticas.
+
+Ocorrência aeronáutica é qualquer evento envolvendo aeronave que poderá ser classificado como incidente, incidente grave ou acidente [(link)](https://www3.fmb.unesp.br/sete/pluginfile.php/20354/mod_page/content/2/A_Investigacao_de_acidentes_aeronauticos_Conforme_a_Lei_no_7.pdf), permitindo ao SIPAER (Sistema de Investigação e Prevenção de Acidentes Aeronáuticos) a adoção dos procedimentos pertinentes.
+
+- Incidente é toda ocorrência aeronáutica que não chega a se caracterizar como um acidente mas que afeta ou possa afetar a segurança da operação.
+- Incidente grave é um incidente que ocorre sob circunstâncias em que um acidente quase ocorreu.
+- Acidente é uma ocorrência tal que qualquer pessoa sofra lesão grave ou morra.
+
+Dadas essas possíveis classificações de uma ocorrência aeronáutica, é importante conhecer fatores que estão associados a ocorrências aeronáuticas perigosas com objetivos de prevenção.
+
+
+```{r diretorios, echo=FALSE, eval=TRUE}
+endereco_dados <- "../2.Dados_e_recursos/1.Datasets/"
+endereco_imagens <- "imagens/"
+endereco_graficos_estaticos <- "graficos_estaticos/" 
+endereco_graficos_interativos <- "graficos_interativos/"
+endereco_funcoes_auxiliares <- "funcoes_auxiliares/"
+```
+
+```{r funcoes_auxiliares, echo=FALSE, eval=TRUE}
+source(paste0(endereco_funcoes_auxiliares,'tabela_metadados.R'),encoding="UTF-8")
+source(paste0(endereco_funcoes_auxiliares,'funcoes_analiseunivariada.R'),encoding="UTF-8")
+source(paste0(endereco_funcoes_auxiliares,'funcoes_analisebivariada.R'),encoding="UTF-8")
+source(paste0(endereco_funcoes_auxiliares,'arruma_grafico_plotly.R'),encoding="UTF-8")
+source(paste0(endereco_funcoes_auxiliares,'salva_grafico.R'), encoding = "UTF-8")
+source(paste0(endereco_funcoes_auxiliares,'leitura_grafico.R'), encoding = "UTF-8")
+```
+
+<!-- ![Gládio - Símbolo  da Força Aérea Brasileira](`r paste0(endereco_imagens,"brasao_fab.jpg")`){width=250px} -->
+
+```{r echo=FALSE, out.width="400px", fig.cap="Gládio - Símbolo  da Força Aérea Brasileira", fig.show='hold',fig.align='center'}
+knitr::include_graphics(paste0(endereco_imagens,"brasao_fab.jpg"))
+```
+
+\newpage
+
+# Apresentação do problema
+
+- O trabalho consiste em gerar documentos (relatórios e apresentação) resultantes da exploração da base de dados "Ocorrências Aeronáuticas na Aviação Civil Brasileira"
+
+- A base de dados é composta por 5 tabelas que são gerenciadas pelo Centro de Investigação e Prevenção de Acidentes Aeronáuticos (CENIPA) - Organização Militar Brasileira vinculada ao Comando da Aeronáutica
+
+- Para obter as tabelas, consulte o link: https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira
+
+- As tabelas têm informações sobre: aeronaves envolvidas, fatalidades, local, data, tipo de ocorrência, fatores contribuintes, etc.
+
+<!-- ![Tabelas das ocorrências aeronáuticas](`r paste0(endereco_imagens,"modelo_dados.png")`){width=570px} -->
+
+```{r echo=FALSE, out.width="550px", fig.cap="Tabelas das ocorrências aeronáuticas", fig.show='hold',fig.align='center'}
+knitr::include_graphics(paste0(endereco_imagens,"modelo_dados.png"))
+```
+
+O nome das tabelas são: OCORRÊNCIA, OCORRÊNCIA_TIPO, AERONAVE, FATOR_CONTRIBUINTE E RECOMENDAÇÃO. Para a realização desse teste, deu-se ênfase às tabelas OCORRÊNCIA e OCORRÊNCIA_TIPO.
+
+
+\newpage
+
+# Explicação do processo utilizado
+
+## Download das tabelas em .csv
+
+<!-- ![**Link: https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira**](`r paste0(endereco_imagens,"dados_e_recursos.PNG")`){width=550px} -->
+
+```{r echo=FALSE, out.width="450px", fig.cap="Link: https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira", fig.show='hold',fig.align='center'}
+knitr::include_graphics(paste0(endereco_imagens,"dados_e_recursos.PNG"))
+```
+
+## Fluxo de trabalho com pacotes da linguagem R
+
+```{r echo=FALSE, out.width="55%", fig.cap="Fluxo de trabalho em Estatística e Ciência de Dados", fig.show='hold',fig.align='center'}
+knitr::include_graphics(paste0(endereco_imagens,"ciclo_ciencia_dados.jpg"))
+```
+
+```{r echo=FALSE, out.width="10%", fig.cap="Alguns pacotes da linguagem R", fig.show='hold',fig.align='center'}
+knitr::include_graphics(c(#paste0(endereco_imagens,"Rlogo.png"),
+                          #paste0(endereco_imagens,"magrittr.png"),
+                          paste0(endereco_imagens,"dplyr.png"),
+                          paste0(endereco_imagens,"DBI.png"),
+                          #paste0(endereco_imagens,"ggplot2.png"),
+                          #paste0(endereco_imagens,"plotly.png"),
+                          paste0(endereco_imagens,"ggplot2_plotly.png"),
+                          paste0(endereco_imagens,"highcharter.png"),
+                          paste0(endereco_imagens,"hex-rmarkdown.png"),
+                          paste0(endereco_imagens,"xaringan.png")#,
+                          #paste0(endereco_imagens,"hex-shiny.png")
+                          ))
+```
+
+Os dados foram obtidos das tabelas baixadas por meio do site mencionado acima, tratados inicialmente com a linguagem R (base, utils, tibble, dplyr), posteriormente importados para um banco de dados (DBI e RPostgres), analisados através de recursos de estatística descritiva como tabelas e gráficos (base, utils, tibble, dplyr, ggplot2, plotly, highcharter), e finalmente, um relatório (rmarkdown) e uma apresentação (xaringan) foram gerados.
+
+\newpage
+
+# Pacotes
+
+```{r define_alias_package, message=FALSE}
+
+#install.packages("box")
+
+box::use("bs" = base)
+box::use("ut" = utils)
+box::use("sta" = stats)
+box::use("mg" = magrittr); library(magrittr)
+box::use("tb" = tibble)
+box::use("dp" = dplyr)
+box::use("gg" = ggplot2)
+box::use("hc" = highcharter)
+box::use("pl" = plotly)
+box::use("dbi" = DBI)
+box::use("rp" = RPostgres)
+box::use("fc" = forcats)
+box::use("st" = stringr)
+
+box::use("kn" = knitr)
+box::use("hw" = htmlwidgets)
+box::use("wb" = webshot)
+```
+
+# Tratamento dos dados originais em R
+
+## Definindo diretórios
+
+```{r diretorios, echo=TRUE, eval=TRUE}
+```
+
+```{r funcoes_auxiliares, echo=TRUE, eval=TRUE}
+```
+
+## Tabelas principais (ocorrencia e ocorrenciatipo)
+
+```{r message=FALSE}
+library(magrittr)
+
+ocorrencia.1 <- ut$read.csv2(file=bs$paste0(endereco_dados,"originais/1.ocorrencia.csv"),
+                            fileEncoding = 'UTF-8-BOM') %>% 
+                tb$as_tibble()
+#ocorrencia.1 %>% bs$dim()
+
+
+ocorrencia.1 <- ocorrencia.1 %>%
+    dp$select(-('codigo_ocorrencia1':'codigo_ocorrencia4')) %>% 
+    dp$mutate(divulgacao_dia_publicacao = bs$ifelse(divulgacao_dia_publicacao == "NULL",
+                                                     NA,divulgacao_dia_publicacao),
+                  ocorrencia_hora = bs$ifelse(ocorrencia_hora == "NULL",
+                                           NA,ocorrencia_hora))
+ocorrencia.1 %>% bs$dim()
+ocorrencia.1 %>% dp$glimpse()
+
+ut$write.table(x = ocorrencia.1,
+            file = bs$paste0(endereco_dados,"final/","1.ocorrencia.csv"),
+            sep = ";",
+            row.names = FALSE,
+            fileEncoding = 'UTF-8')
+```
+
+```{r}
+ocorrencia_tipo.2 <- ut$read.csv2(file=bs$paste0(endereco_dados,"originais/2.ocorrencia_tipo.csv"),
+                               fileEncoding = 'UTF-8-BOM') %>% 
+                tb$as_tibble() %>% dp$rename("codigo_ocorrencia" = "codigo_ocorrencia1")
+#ocorrencia_tipo.2 %>% dim()
+
+
+ocorrencia_tipo <- ocorrencia_tipo.2 %>%
+                    dp$select('ocorrencia_tipo') %>%
+                    dp$distinct() %>%
+                    dp$mutate("codigo_ocorrencia_tipo" = 1:dp$n(),
+                                  .before = "ocorrencia_tipo")
+ocorrencia_tipo %>% bs$dim()
+ocorrencia_tipo %>% dp$glimpse()
+
+ut$write.table(x = ocorrencia_tipo,
+            file = bs$paste0(endereco_dados,"final/","2.ocorrencia_tipo.csv"),
+            sep = ";",
+            row.names = FALSE,
+            fileEncoding = 'UTF-8')
+```
+
+## Tabela de relacionamento (ocorrencia_ocorrencia_tipo)
+
+Como o relacionamento entre as tabelas ocorrencia e ocorrenciatipo é de cardiladidade N:N e os dados posteriormente foram inseridos em um banco de dados, é considerado uma boa prática no mapeamento MER-MR (Modelo Entidade Relacionamento para Modelo Relacional) criar uma tabela de relacionamento. 
+
+```{r}
+ocorrencia_ocorrencia_tipo <- dp$left_join(
+    x = ocorrencia_tipo.2,
+    y = ocorrencia_tipo,
+    by = "ocorrencia_tipo"
+) %>%
+    dp$relocate("codigo_ocorrencia_tipo", .before = "ocorrencia_tipo") %>%
+    dp$select("codigo_ocorrencia", "codigo_ocorrencia_tipo")
+ocorrencia_ocorrencia_tipo %>% bs$dim()
+ocorrencia_ocorrencia_tipo %>% dp$glimpse()
+
+ut$write.table(x = ocorrencia_ocorrencia_tipo,
+            file = bs$paste0(endereco_dados,"final/","2.ocorrencia_ocorrencia_tipo.csv"),
+            sep = ";",
+            row.names = FALSE,
+            fileEncoding = 'UTF-8')
+```
+
+# Conexão e criação do banco de dados
+
+## Criação de banco de dados: ocorrencias
+
+```{r}
+# library(DBI)
+# library(RPostgres)
+
+con <- dbi$dbConnect(rp$Postgres(),
+                 host = "localhost",
+                 user = "postgres",
+                 password = "123",
+                 port = 5432,
+                 dbname = "postgres")
+
+# usar para gerar relatório novamente
+bs$try(dbi$dbExecute(con, "select pg_terminate_backend(pid)
+                        from pg_stat_activity
+                        where datname = 'ocorrencias';"))
+bs$try(dbi$dbExecute(con, "DROP DATABASE ocorrencias;"))
+
+dbi$dbExecute(con, "CREATE DATABASE ocorrencias;")
+
+```
+
+```{r}
+con <- dbi$dbConnect(rp$Postgres(),
+                 user = "postgres",
+                 password = "123",
+                 host = "localhost",
+                 port = 5432,
+                 dbname = "ocorrencias")
+```
+
+## Criação de tabelas principais (ocorrencia e ocorrenciatipo)
+
+```{r}
+
+# dbi$dbExecute(con, "CREATE SCHEMA public;")
+
+# dbi$dbExecute(con, "DROP TABLE ocorrencia;")
+dbi$dbExecute(con, "CREATE TABLE ocorrencia (
+  codigo_ocorrencia INTEGER not null,
+  ocorrencia_classificacao VARCHAR(25) not null,
+  ocorrencia_latitude VARCHAR(20),
+  ocorrencia_longitude VARCHAR(20),
+  ocorrencia_cidade VARCHAR(60) not null,
+  ocorrencia_uf VARCHAR(5) not null,
+  ocorrencia_pais VARCHAR(40) not null,
+  ocorrencia_aerodromo VARCHAR(5),
+  ocorrencia_dia date not null,
+  ocorrencia_hora time,
+  investigacao_aeronave_liberada VARCHAR(5),
+  investigacao_status VARCHAR(20),
+  divulgacao_relatorio_numero VARCHAR(60),
+  divulgacao_relatorio_publicado VARCHAR(5),
+  divulgacao_dia_publicacao date,
+  total_recomendacoes integer,
+  total_aeronaves_envolvidas integer not null,
+  ocorrencia_saida_pista VARCHAR(5),
+  CONSTRAINT ocorrencia_pk PRIMARY KEY (codigo_ocorrencia)
+);")
+
+# dbi$dbExecute(con, "DROP TABLE ocorrenciatipo;")
+dbi$dbExecute(con,
+"CREATE TABLE ocorrenciatipo (
+    codigo_ocorrencia_tipo INTEGER not null,
+    ocorrencia_tipo VARCHAR(120) not null,
+    CONSTRAINT ocorrenciatipo_pk PRIMARY KEY (codigo_ocorrencia_tipo)
+);
+"
+)
+```
+
+## Criação de tabela de relacionamento (ocorrencia_ocorrenciatipo)
+
+```{r}
+## relações entre as tabelas
+
+
+# dbi$dbExecute(con, "DROP TABLE ocorrencia_ocorrenciatipo;")
+dbi$dbExecute(con,"CREATE TABLE ocorrencia_ocorrenciatipo (
+    codigo_ocorrencia INTEGER not null,
+    codigo_ocorrencia_tipo INTEGER not null
+);
+"
+)
+```
+
+# Inserir dados no banco de dados 
+
+## Tabelas principais (ocorrencia e ocorrenciatipo)
+
+
+```{r}
+# alterar formato de data de mdy para dmy
+dbi$dbGetQuery(con,"show datestyle;")
+dbi$dbGetQuery(con,"set datestyle = euro;")
+dbi$dbGetQuery(con,"show datestyle;")
+
+dbi$dbExecute(con,bs$paste0("COPY ocorrencia(codigo_ocorrencia,
+  ocorrencia_classificacao,
+  ocorrencia_latitude,
+  ocorrencia_longitude,
+  ocorrencia_cidade,
+  ocorrencia_uf,
+  ocorrencia_pais,
+  ocorrencia_aerodromo,
+  ocorrencia_dia,
+  ocorrencia_hora,
+  investigacao_aeronave_liberada,
+  investigacao_status,
+  divulgacao_relatorio_numero,
+  divulgacao_relatorio_publicado,
+  divulgacao_dia_publicacao,
+  total_recomendacoes,
+  total_aeronaves_envolvidas,
+  ocorrencia_saida_pista)
+FROM ",bs$paste0("'",
+              bs$normalizePath(endereco_dados,
+                            winslash = "/"),
+              "/final/"),"1.ocorrencia.csv'
+
+WITH DELIMITER ';'
+CSV
+HEADER
+NULL AS 'NA'
+ENCODING 'UTF8';
+"))
+```
+
+```{r}
+dbi$dbExecute(con,bs$paste0("COPY ocorrenciatipo (
+    codigo_ocorrencia_tipo,
+    ocorrencia_tipo)
+FROM ",bs$paste0("'",
+              bs$normalizePath(endereco_dados,
+                            winslash = "/"),
+              "/final/"),"2.ocorrencia_tipo.csv'
+
+WITH DELIMITER ';'
+CSV
+HEADER
+NULL AS 'NA'
+ENCODING 'UTF8';
+"))
+```
+
+## Tabela de relacionamento (ocorrencia_ocorrencia_tipo)
+
+```{r}
+dbi$dbExecute(con,bs$paste0("COPY ocorrencia_ocorrenciatipo (
+    codigo_ocorrencia,
+    codigo_ocorrencia_tipo)
+FROM ",bs$paste0("'",
+              bs$normalizePath(endereco_dados,
+                            winslash = "/"),
+              "/final/"),"2.ocorrencia_ocorrencia_tipo.csv'
+
+WITH DELIMITER ';'
+CSV
+HEADER
+NULL AS 'NA'
+ENCODING 'UTF8';
+"))
+```
+
+
+# Hipóteses levantadas (Consultas para criação de gráficos e tabelas) 
+
+## Q1 – Ocorrem mais incidentes do que acidentes (frequência maior de ocorrências menos graves)?
+
+- As ocorrências aeronáuticas são classificadas em três categorias: Incidente, Incidente grave e Acidente
+
+    - Incidente é toda ocorrência que não chega a se caracterizar como um acidente mas que afeta ou possa afetar a segurança da operação.
+    
+    - Incidente grave é um incidente que ocorre sob circunstâncias em que um acidente quase ocorreu.
+    
+    - Acidente é uma ocorrência tal que qualquer pessoa sofra lesão grave ou morra.
+
+
+```{r echo=FALSE, message=FALSE}
+ocorrencia <- dp$tbl(con, "ocorrencia")
+```
+
+
+```{r}
+#source('funcoes_auxiliares/funcoes_analiseunivariada.R',encoding="UTF-8")
+p_ocor_classif <- calcula_tab_frequencia_dplyr(
+    tabela_de_entrada = ocorrencia,
+    nome_variavel = `ocorrencia_classificacao`,
+    specific_order = c("ACIDENTE","INCIDENTE GRAVE", "INCIDENTE")
+)
+
+p_ocor_classif$`Category` <- p_ocor_classif$`Category` %>% fc$fct_inorder()
+
+if (kn$is_html_output()) {
+    p_ocor_classif
+} else {
+    p_ocor_classif %>% kn$kable()
+}
+
+
+```
+
+
+```{r fig.align='center',warning=FALSE, message=FALSE}
+
+#################################################################### Cria gráfico
+
+#source('funcoes_auxiliares/funcoes_analiseunivariada.R',encoding="UTF-8")
+ggplot2_p_ocor_classif <- grafico_tab_frequencia(
+    table_count_prop = p_ocor_classif,
+    nome_variavel = "Category",
+    cor_grafico = "#77C6D9",
+    hjust_e = -0.17,
+    hjust_d = 0.15,
+    size = 4.5,
+    tx1 = 0.05,
+    tx2 = 1,
+    xlab = "Classificação das ocorrências aeronáuticas",
+    ylab = "N° de ocorrências aeronáuticas"
+)
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_p_ocor_classif)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_p_ocor_classif)
+```
+
+
+```{r echo=FALSE}
+p_incidente <- p_ocor_classif %>%
+    dp$filter(st$str_detect(`Category`, "ACIDENTE") |
+                  st$str_detect(`Category`, "INCIDENTE GRAVE")) %>% 
+    dp$pull(`Percentage`) %>% 
+    sum() %>% 
+    round(1) %>%
+        mg$subtract(100,.)
+
+bs$saveRDS(p_incidente,
+           file = bs$paste0(endereco_graficos_estaticos,
+                            substitute(p_incidente),
+                            ".rds"))
+```
+
+
+> Apesar de incidentes (~ `r bs$paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs$paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas.
+
+## Q2 – O número de acidentes tem caído com o passar do tempo?
+
+```{r}
+#source('funcoes_auxiliares/funcoes_analiseunivariada.R',encoding="UTF-8")
+p_ocor_ano <- calcula_tab_frequencia_dplyr(
+    tabela_de_entrada = (ocorrencia %>%
+                            dp$mutate(`ocorrencia_ano` = dp$sql("DATE_PART('year', ocorrencia_dia)"))
+                         ), 
+    nome_variavel = `ocorrencia_ano`,
+    specific_order = (ocorrencia %>%
+                          dp$mutate(`ocorrencia_ano` = dp$sql("DATE_PART('year', ocorrencia_dia)")) %>%
+                          dp$pull(`ocorrencia_ano`) %>% 
+                          bs$unique() %>% bs$sort())
+)
+
+if (kn$is_html_output()) {
+    p_ocor_ano
+} else {
+    p_ocor_ano %>% kn$kable()
+}
+
+```
+
+```{r fig.align='center',warning=FALSE, message=FALSE}
+
+#################################################################### Cria gráfico
+
+p_ocor_ano[["Category"]] <- as.factor(p_ocor_ano[["Category"]])
+
+ggplot2_p_ocor_ano <- gg$ggplot(gg$aes(
+    x = Category,
+    y = Frequency,
+    group = 1
+), data = p_ocor_ano) +
+    gg$geom_point(colour='#022634') +
+    gg$geom_line(colour='#022634') +
+    gg$geom_text(gg$aes(label=bs$paste0(bs$round(Percentage,2),'%'),
+                  y=Frequency+0.035*bs$min(Frequency))) +
+    gg$xlab('Ano') +
+    gg$ylab('N° de ocorrências aeronáuticas') +
+    gg$theme_classic() 
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_p_ocor_ano)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_p_ocor_ano)
+
+```
+
+
+> É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano.
+
+
+
+```{r}
+ocorrencia_aux <- ocorrencia %>%
+    dp$mutate(`ocorrencia_ano` = dp$sql("DATE_PART('year', ocorrencia_dia)"))
+p_ocor_ano_classif <- calcula_tab_frequencia_bivariada_dplyr(ocorrencia_aux,
+                                                             `ocorrencia_ano`,
+                                                             `ocorrencia_classificacao`)
+
+if (kn$is_html_output()) {
+    p_ocor_ano_classif
+} else {
+    p_ocor_ano_classif %>% kn$kable()
+}
+```
+
+
+
+```{r fig.align='center'}
+
+#################################################################### Cria gráfico
+
+# p_ocor_ano_classif[["ocorrencia_ano"]] <-
+#     as.factor(p_ocor_ano_classif[["ocorrencia_ano"]])
+# p_ocor_ano_classif[, "ocorrencia_classificacao"] <-
+#     factor(p_ocor_ano_classif[, "ocorrencia_classificacao"],
+#                    levels=c("ACIDENTE","INCIDENTE GRAVE", "INCIDENTE"))
+
+ggplot2_ocor_ano_classif <- gg$ggplot(
+    gg$aes(
+        x = ocorrencia_ano,
+        y = Frequency,
+        colour = ocorrencia_classificacao,
+        group = ocorrencia_classificacao
+    ),
+    data = p_ocor_ano_classif
+) +
+    gg$geom_point() +
+    gg$geom_line() +
+    gg$ylab('N° de ocorrências aeronáuticas') +
+    gg$scale_fill_discrete(name = "Classificação das ocorrências aeronáuticas") +
+    gg$theme_classic() +
+    gg$geom_text(gg$aes(label = bs$paste0(bs$round(Percentage, 1), "%"),
+                                    y = bs$as.numeric(Frequency) + 20)) +
+    gg$labs(color='Classificação das ocorr. aeron.') +
+    gg$theme(legend.position="top") +
+    gg$expand_limits(y = bs$max(p_ocor_ano_classif[['Frequency']]) * 1.2) +
+    gg$scale_x_continuous(
+        name="Ano",
+        labels = as.character(unique(p_ocor_ano_classif$ocorrencia_ano)),
+        breaks = unique(p_ocor_ano_classif$ocorrencia_ano)
+    )
+
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_ano_classif)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_ano_classif)
+```
+
+```{r fig.align='center', message=FALSE}
+ggplot2_ocor_ano_classif_lm <- ggplot2_ocor_ano_classif
+ggplot2_ocor_ano_classif_lm$layers[[2]] <- NULL # remove gg$geom_line()
+ggplot2_ocor_ano_classif_lm <- ggplot2_ocor_ano_classif_lm + 
+    gg$geom_smooth(data = p_ocor_ano_classif[p_ocor_ano_classif$ocorrencia_ano <= 2016, ],
+                   method = sta$"lm",
+                   se = F,lwd=0.5) + # acrescenta regressão linear por partes (Ano <= 2016)
+    gg$geom_smooth(data = p_ocor_ano_classif[p_ocor_ano_classif$ocorrencia_ano > 2016,],
+                   method = sta$"lm",
+                   se = F,lwd=0.5) # acrescenta regressão linear por partes (Ano > 2016)
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_ano_classif_lm)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_ano_classif_lm)
+```
+
+
+
+```{r echo=FALSE}
+p_nao_incidente_ano <- p_ocor_ano_classif %>% dp$filter(`ocorrencia_classificacao` == "INCIDENTE") %>% 
+    dp$pull(`Percentage`)
+names(p_nao_incidente_ano) <- unique(p_ocor_ano_classif[["ocorrencia_ano"]])
+p_nao_incidente_ano <- 100-p_nao_incidente_ano
+p_nao_incidente_ano <- p_nao_incidente_ano[c(bs$which.min(p_nao_incidente_ano),
+                        bs$which.max(p_nao_incidente_ano))]
+
+bs$saveRDS(p_nao_incidente_ano,
+           file = bs$paste0(endereco_graficos_estaticos,
+                            substitute(p_nao_incidente_ano),
+                            ".rds"))
+```
+
+> Nota-se que a tendência geral do número absoluto de ocorrências aeronáuticas também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE", ou seja, há presença de tendência de baixa até 2016 e de alta após o mesmo ano. Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram com valores mínimo e máximo iguais à `r bs$paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` e `r bs$paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`, respectivamente.
+
+
+
+## Q3 – Ocorrem mais acidentes em estados de maior atividade econômica (Ex.: SP, MG, RJ, PR)?
+
+
+```{r }
+p_ocor_uf <- calcula_tab_frequencia_dplyr(
+    tabela_de_entrada = ocorrencia,
+    nome_variavel = `ocorrencia_uf`
+)
+
+p_ocor_uf[,'Category'] <- as.character(p_ocor_uf[,'Category'],2)
+p_ocor_uf[,'Percentage'] <- round(p_ocor_uf[,'Percentage'],2)
+
+if (kn$is_html_output()) {
+    p_ocor_uf
+} else {
+    p_ocor_uf %>% kn$kable()
+}
+
+```
+
+
+```{r message=FALSE}
+# se der erro parecido com:
+# Error: parse error: trailing garbage
+#          [2804,4640],[2713,4570]]]}}]};
+#                     (right here) ------^
+# instalar pacote com remotes::install_github("jbkunst/highcharter")
+# e tentar novamente
+
+#remotes::install_github("jbkunst/highcharter")
+#library(highcharter)
+
+if (file.exists(bs$paste0(endereco_graficos_interativos, "map.rds"))) {
+    map <- bs$readRDS(file = bs$paste0(endereco_graficos_interativos, "map.rds"))
+} else {
+    map <- hc$get_data_from_map(hc$download_map_data("countries/br/br-all"))
+}
+
+if (file.exists(bs$paste0(endereco_graficos_interativos, "map2.rds"))) {
+    map2 <- bs$readRDS(file = bs$paste0(endereco_graficos_interativos, "map2.rds"))
+} else {
+    map2 <- hc$download_map_data("countries/br/br-all")
+}
+
+bs$saveRDS(
+    map,
+    file = bs$paste0(
+        endereco_graficos_interativos,
+        "map.rds"
+    )
+)
+bs$saveRDS(
+    map2,
+    file = bs$paste0(
+        endereco_graficos_interativos,
+        "map2.rds"
+    )
+)
+
+dados <- map[,bs$c("woe-name","hc-a2")] %>% 
+    dp$left_join(x=.,y=p_ocor_uf, by = bs$c("hc-a2" = "Category"))
+
+
+```
+
+```{r }
+# instalar phantomjs se gráfico não ser gerado em pdf
+# webshot::install_phantomjs()
+
+
+plot <- hc$highchart(type = "map") %>%
+    #hc$hc_plotOptions(series = list(animation = FALSE)) %>% 
+  hc$hc_add_series_map(map = map2,
+                    df = dados,
+                    value = "Frequency",
+                    joinBy = "hc-a2",
+                        dataLabels = bs$list(
+                          enabled = TRUE,
+                          format = "{point.hc-a2}"
+                          )) %>%
+    hc$hc_tooltip(
+    useHTML = TRUE, headerFormat = "",
+    pointFormat = "{point.name} - {point.value} ({point.Percentage}%)"
+  ) %>% 
+  hc$hc_title(text = "Ocorrências aeronáuticas por unidade federativa")
+
+
+
+hw$saveWidget(widget = plot, file = paste0(endereco_imagens,"plot.html"))
+if (kn$is_html_output()) {
+    plot
+} else {
+    wb$webshot(url = paste0(endereco_imagens,"plot.html"), 
+                     file =paste0(endereco_imagens,"plot.png"),
+                     delay = 0.2,
+                     zoom=1.5)
+}
+
+bs$saveRDS(plot,
+           file = bs$paste0(endereco_graficos_interativos,
+                            substitute(plot),
+                            ".rds"))
+
+```
+
+
+```{r echo=FALSE, eval=FALSE}
+
+a <- (
+    ocorrencia %>%
+        dp$select(`ocorrencia_uf`, `ocorrencia_classificacao`) %>%
+        dp$group_by(`ocorrencia_uf`, `ocorrencia_classificacao`) %>%
+        dp$summarise(`FreqAbs` = dplyr::n())
+)
+
+p_ocor_uf_classif <- dp$left_join(a, (
+    dp$group_by(a, `ocorrencia_uf`) %>%
+        dp$summarise(sum_FreqAbs = sum(`FreqAbs`))
+), by = "ocorrencia_uf") %>%
+    dp$arrange(dplyr::desc(`sum_FreqAbs`)) %>%
+    dp$mutate(`FreqRelP`=(`FreqAbs`/`sum_FreqAbs`)*100)
+
+if (kn$is_html_output()) {
+    p_ocor_uf_classif
+} else {
+    p_ocor_uf_classif %>% kn$kable()
+}
+
+```
+
+```{r}
+p_ocor_uf_classif <- calcula_tab_frequencia_bivariada_dplyr(ocorrencia_aux,
+                                                             `ocorrencia_uf`,
+                                                             `ocorrencia_classificacao`)
+p_ocor_uf_classif <- p_ocor_uf_classif %>% dp$arrange(dp$desc(sum_Frequency))
+p_ocor_uf_classif$`Percentage` <- round(p_ocor_uf_classif$`Percentage`,1)
+p_ocor_uf_classif$`ocorrencia_uf` <- fc$fct_inorder(p_ocor_uf_classif$`ocorrencia_uf`)
+
+if (kn$is_html_output()) {
+    p_ocor_uf_classif
+} else {
+    p_ocor_uf_classif %>% kn$kable()
+}
+```
+
+```{r fig.align='center', message=FALSE}
+ggplot2_ocor_uf_classif1 <- grafico_tab_frequencia_bivariada2(
+    p_ocor_uf_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_uf",
+    tx1 = 0.6,
+    tx2 = 1.3,
+    size = 3,
+    legend = TRUE
+) + gg$coord_cartesian(xlim = c(p_ocor_uf_classif[["ocorrencia_uf"]][1],
+                        p_ocor_uf_classif[["ocorrencia_uf"]][15])) +
+    gg$scale_fill_discrete(name = "Classificação das ocorr. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$ylab('N° de ocorrências aeronáuticas') +
+    gg$xlab('UF')
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_uf_classif1)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_uf_classif1)
+```
+
+
+```{r fig.align='center', message=FALSE}
+ggplot2_ocor_uf_classif2 <- grafico_tab_frequencia_bivariada3(
+    p_ocor_uf_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_uf",
+    size = 2,
+    tx1 = 0.025,
+    tx2 = 0.00025,
+    legend=FALSE
+) + gg$scale_fill_discrete(name = "Classificação das ocorr. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$ylab('Proporção de ocorrências aeronáuticas') +
+    gg$xlab('UF')
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_uf_classif2, subir_eixo_y = T)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_uf_classif2)
+```
+
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+p_ocor_uf_classif_aux <- p_ocor_uf_classif %>%
+    dp$filter(`ocorrencia_classificacao` == "ACIDENTE" & `ocorrencia_uf` != "***") %>% 
+    dp$arrange(dp$desc(`Percentage`)) %>% 
+    ut$head(3)
+
+bs$saveRDS(p_ocor_uf_classif_aux,
+           file = bs$paste0(
+               endereco_graficos_estaticos,
+               substitute(p_ocor_uf_classif_aux),
+               ".rds"
+           ))
+```
+
+> Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de `r p_ocor_uf_classif_aux[1,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[1,c("Percentage")]`%), `r p_ocor_uf_classif_aux[2,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[2,c("Percentage")]`%), e `r p_ocor_uf_classif_aux[3,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[3,c("Percentage")]`%) que têm as maiores proporções de acidentes.
+
+
+## Q4 – Ocorrem mais acidentes na saída da pista?
+
+```{r}
+p_ocor_saida_pista <- calcula_tab_frequencia_dplyr(
+    tabela_de_entrada = ocorrencia,
+    nome_variavel = `ocorrencia_saida_pista`
+)
+
+if (kn$is_html_output()) {
+    p_ocor_saida_pista
+} else {
+    p_ocor_saida_pista %>% kn$kable()
+}
+
+```
+
+```{r fig.align='center',warning=FALSE, message=FALSE}
+
+#################################################################### Cria gráfico
+
+#source('funcoes_auxiliares/funcoes_analiseunivariada.R',encoding="UTF-8")
+ggplot2_p_ocor_saida_pista <- grafico_tab_frequencia(
+    table_count_prop = p_ocor_saida_pista,
+    nome_variavel = "Category",
+    cor_grafico = "#77C6D9",
+    hjust_e = -0.17,
+    hjust_d = 0.15,
+    size = 4.5,
+    tx1 = 0.05,
+    tx2 = 1,
+    xlab = "Ocorrências aeronáuticas na saída de pista",
+    ylab = "N° de ocorrências aeronáuticas"
+)
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_p_ocor_saida_pista)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_p_ocor_saida_pista)
+```
+
+
+
+```{r}
+p_ocor_saida_pista_classif <- calcula_tab_frequencia_bivariada_dplyr(ocorrencia,
+                                                             `ocorrencia_saida_pista`,
+                                                             `ocorrencia_classificacao`)
+
+p_ocor_saida_pista_classif$`Percentage` <- round(p_ocor_saida_pista_classif$`Percentage`,1)
+
+if (kn$is_html_output()) {
+    p_ocor_saida_pista_classif
+} else {
+    p_ocor_saida_pista_classif %>% kn$kable()
+}
+```
+
+```{r fig.align='center', message=FALSE}
+
+ggplot2_ocor_saida_pista_classif1 <- grafico_tab_frequencia_bivariada2(
+    p_ocor_saida_pista_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_saida_pista",
+    tx1 = 0.3,
+    tx2 = 1.3,
+    size = 4,
+    legend = TRUE
+) + gg$scale_fill_discrete(name = "Classificação das ocorr. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$ylab('N° de ocorrências aeronáuticas') +
+    gg$xlab('Ocorrências aeronáuticas na saída de pista')
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_saida_pista_classif1)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_saida_pista_classif1)
+```
+
+
+```{r fig.align='center', message=FALSE}
+ggplot2_ocor_saida_pista_classif2 <- grafico_tab_frequencia_bivariada3(
+    p_ocor_saida_pista_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_saida_pista",
+    size = 5,
+    tx1 = 0.025,
+    tx2 = 0.00025,
+    legend=FALSE
+) + gg$scale_fill_discrete(name = "Classificação das ocorr. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$ylab('Proporção de ocorrências aeronáuticas') +
+    gg$xlab('Ocorrências aeronáuticas na saída de pista')
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_saida_pista_classif2, subir_eixo_y = T)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_saida_pista_classif2)
+
+```
+
+
+```{r echo=FALSE}
+p_ocor_saida_pista_classif_aux <- p_ocor_saida_pista_classif %>%
+    dp$filter(st$str_detect(`ocorrencia_classificacao`, "ACIDENTE"))
+p_ocor_saida_pista_classif_aux_nao_perc <- p_ocor_saida_pista_classif_aux %>% 
+    dp$filter(`ocorrencia_saida_pista` == "NÃO") %>% 
+    dp$pull(`Percentage`) %>% 
+    bs$paste0("%")
+p_ocor_saida_pista_classif_aux_sim_perc <- p_ocor_saida_pista_classif_aux %>% 
+    dp$filter(`ocorrencia_saida_pista` == "SIM") %>% 
+    dp$pull(`Percentage`) %>% 
+    bs$paste0("%")
+
+bs$saveRDS(p_ocor_saida_pista_classif_aux,
+           file = bs$paste0(
+               endereco_graficos_estaticos,
+               substitute(p_ocor_saida_pista_classif_aux),
+               ".rds"
+           ))
+
+bs$saveRDS(p_ocor_saida_pista_classif_aux_nao_perc,
+           file = bs$paste0(
+               endereco_graficos_estaticos,
+               substitute(p_ocor_saida_pista_classif_aux_nao_perc),
+               ".rds"
+           ))
+bs$saveRDS(p_ocor_saida_pista_classif_aux_sim_perc,
+           file = bs$paste0(
+               endereco_graficos_estaticos,
+               substitute(p_ocor_saida_pista_classif_aux_sim_perc),
+               ".rds"
+           ))
+```
+
+> Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (`r p_ocor_saida_pista_classif_aux_sim_perc` > `r p_ocor_saida_pista_classif_aux_nao_perc`).
+
+## Q5 – Quais são os tipos de ocorrência associadas com maior proporção de acidentes?
+
+```{r}
+ocorrenciatipo <- dp$tbl(con, "ocorrenciatipo")
+ocorrencia_ocorrenciatipo <- dp$tbl(con, "ocorrencia_ocorrenciatipo")
+```
+
+
+```{r}
+ocorrencia_ocorrenciatipo_aux <-
+    dplyr::left_join(x = ocorrencia_ocorrenciatipo,
+                     y = ocorrenciatipo,
+                     by = 'codigo_ocorrencia_tipo') %>%
+    dplyr::left_join(
+        x = .,
+        y = (
+            ocorrencia_ocorrenciatipo %>%
+                dp$select(codigo_ocorrencia) %>%
+                dp$group_by(codigo_ocorrencia) %>%
+                dp$summarise(codigo_ocorrencia_count = dplyr::n())
+        ),
+        by = 'codigo_ocorrencia'
+    ) %>% 
+    dplyr::mutate(ocorrencia_tipo_new = ifelse(codigo_ocorrencia_count==1,
+                                               ocorrencia_tipo,
+                                                (ifelse(codigo_ocorrencia_count==2,
+                                                        '2 TIPOS DE OCORRÊNCIA',
+                                                        (ifelse(codigo_ocorrencia_count==3,
+                                                                '3 TIPOS DE OCORRÊNCIA',
+                                                                'NA')) )))) %>% 
+    dplyr::select(codigo_ocorrencia, codigo_ocorrencia_tipo, ocorrencia_tipo, ocorrencia_tipo_new) %>% 
+    as.data.frame()
+
+ocorrencia_ocorrenciatipo_aux1.5 <-ocorrencia_ocorrenciatipo_aux %>% dplyr::select(codigo_ocorrencia,
+                                                        ocorrencia_tipo_new) %>% 
+            dplyr::distinct() %>% as.data.frame()
+
+ocorrencia_ocorrenciatipo_aux2 <- ocorrencia %>%
+    as.data.frame() %>% 
+    dplyr::select(codigo_ocorrencia, ocorrencia_classificacao) %>%
+    dplyr::left_join(
+        x = .,
+        y = ocorrencia_ocorrenciatipo_aux1.5,
+        by = 'codigo_ocorrencia'
+    )
+
+```
+
+```{r}
+p_ocor_ocorrencia_tipo_new <- calcula_tab_frequencia_dplyr(
+    tabela_de_entrada = ocorrencia_ocorrenciatipo_aux2,
+    nome_variavel = `ocorrencia_tipo_new`
+)
+
+p_ocor_ocorrencia_tipo_new <- p_ocor_ocorrencia_tipo_new %>% dp$arrange(dp$desc(Frequency))
+p_ocor_ocorrencia_tipo_new$`Percentage` <- round(p_ocor_ocorrencia_tipo_new$`Percentage`,1)
+p_ocor_ocorrencia_tipo_new[['Category']] <- factor(p_ocor_ocorrencia_tipo_new[['Category']],
+                                                   levels=rev(p_ocor_ocorrencia_tipo_new[['Category']]))
+
+if (kn$is_html_output()) {
+    p_ocor_ocorrencia_tipo_new
+} else {
+    p_ocor_ocorrencia_tipo_new %>% kn$kable()
+}
+```
+
+
+
+
+```{r fig.align='center',warning=FALSE, message=FALSE}
+
+#################################################################### Cria gráfico
+
+#source('funcoes_auxiliares/funcoes_analiseunivariada.R',encoding="UTF-8")
+ggplot2_p_ocor_ocorrencia_tipo_new <- grafico_tab_frequencia2(
+    table_count_prop = p_ocor_ocorrencia_tipo_new,
+    nome_variavel = 'ocorrencia_tipo_new',
+    cor_grafico = '#77C6D9',
+    size = 5,
+    tx1 = 1.5,
+    tx2 = 1.2
+)
+
+ggplot2_p_ocor_ocorrencia_tipo_new <- ggplot2_p_ocor_ocorrencia_tipo_new + 
+                                        gg$scale_x_discrete(
+                                        labels = function(x) {
+                                              is_long <- nchar(x) > 25
+                                              x[is_long] <- paste0(substr(x[is_long], 1, 25), ".")
+                                              x
+                                            }
+                                          ) +
+    gg$coord_flip(xlim=c(p_ocor_ocorrencia_tipo_new[['Category']][1],
+                         p_ocor_ocorrencia_tipo_new[['Category']][6])) +
+    gg$xlab('Tipo de ocorr. aeron.') +
+    gg$ylab('N° de ocorrências aeronáuticas')
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_p_ocor_ocorrencia_tipo_new)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_p_ocor_ocorrencia_tipo_new)
+```
+
+
+
+```{r}
+p_ocor_ocorrencia_tipo_new_classif <- calcula_tab_frequencia_bivariada_dplyr(ocorrencia_ocorrenciatipo_aux2,
+                                                             `ocorrencia_tipo_new`,
+                                                             `ocorrencia_classificacao`)
+
+p_ocor_ocorrencia_tipo_new_classif <- p_ocor_ocorrencia_tipo_new_classif %>% 
+                    dplyr::arrange(match(`ocorrencia_tipo_new`, p_ocor_ocorrencia_tipo_new[['Category']]))
+p_ocor_ocorrencia_tipo_new_classif$`Percentage` <- round(p_ocor_ocorrencia_tipo_new_classif$`Percentage`,1)
+p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']] <- fc$fct_rev(fc$fct_inorder(
+    p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']])
+    )
+
+if (kn$is_html_output()) {
+    p_ocor_ocorrencia_tipo_new_classif
+} else {
+    p_ocor_ocorrencia_tipo_new_classif %>% kn$kable()
+}
+```
+
+```{r fig.align='center', message=FALSE}
+ggplot2_ocor_ocorrencia_tipo_new_classif1 <- grafico_tab_frequencia_bivariada2(
+    p_ocor_ocorrencia_tipo_new_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_tipo_new",
+    tx1 = 1.2,
+    tx2 = 1.3,
+    size = 3,
+    legend = TRUE
+    
+) + gg$scale_fill_discrete(name = "Classif. ocor. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$coord_flip(xlim=c(p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']][1],
+                         p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']][20])) +
+    gg$scale_x_discrete(
+  labels = function(x) {
+        is_long <- nchar(x) > 20
+        x[is_long] <- paste0(substr(x[is_long], 1, 20), ".")
+        x
+      }) +
+    ggplot2::ylab("N° de ocorrências aeronáuticas") +
+    ggplot2::xlab("Tipo de ocorr. aeron.")
+
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif1, y=1.075)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif1)
+```
+
+
+```{r fig.align='center', message=FALSE}
+
+
+ggplot2_ocor_ocorrencia_tipo_new_classif2 <- grafico_tab_frequencia_bivariada3(
+    p_ocor_ocorrencia_tipo_new_classif,
+    "ocorrencia_classificacao",
+    "ocorrencia_tipo_new",
+    size = 2,
+    tx1 = 0.025,
+    tx2 = 0.00025,
+    legend=FALSE
+) + gg$scale_fill_discrete(name = "Classif. ocor. aeron.") +
+    gg$theme(legend.position="top") + 
+    gg$coord_flip(xlim=c(p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']][1],
+                         p_ocor_ocorrencia_tipo_new_classif[['ocorrencia_tipo_new']][20])) +
+    gg$scale_x_discrete(
+  labels = function(x) {
+        is_long <- nchar(x) > 20
+        x[is_long] <- paste0(substr(x[is_long], 1, 20), ".")
+        x
+      }) +
+    gg$ylab('Proporção de ocorrências aeronáuticas') +
+    gg$xlab('Tipo de ocorr. aeron.')
+# 
+
+```
+
+```{r fig.align='center', message=FALSE}
+p_ocor_ocorrencia_tipo_new_classif3 <- p_ocor_ocorrencia_tipo_new_classif
+aux <- p_ocor_ocorrencia_tipo_new_classif3 %>% 
+    dp$filter(`ocorrencia_classificacao` == "ACIDENTE") %>% 
+    dp$arrange(dp$desc(`Percentage`)) %>% 
+    dp$pull(ocorrencia_tipo_new)
+p_ocor_ocorrencia_tipo_new_classif3 <- p_ocor_ocorrencia_tipo_new_classif3 %>% 
+                    dplyr::arrange(match(`ocorrencia_tipo_new`, aux)) %>% 
+    dp$mutate(`ocorrencia_tipo_new` = bs$as.character(`ocorrencia_tipo_new`)) %>% 
+    dp$mutate(`ocorrencia_tipo_new` = bs$ifelse(`ocorrencia_tipo_new` == "", "NULL",
+                                             `ocorrencia_tipo_new`)) %>% 
+    dp$mutate(`ocorrencia_tipo_new` = fc$fct_rev(fc$fct_inorder(`ocorrencia_tipo_new`)))
+    
+
+ggplot2_ocor_ocorrencia_tipo_new_classif3 <- grafico_tab_frequencia_bivariada3(
+    p_ocor_ocorrencia_tipo_new_classif3,
+    "ocorrencia_classificacao",
+    "ocorrencia_tipo_new",
+    size = 1.8,
+    tx1 = 0.025,
+    tx2 = 0.00025,
+    legend=FALSE
+    
+) + gg$scale_x_discrete(
+    labels = function(k) {
+        is_long <- nchar(k) > 19
+        k[is_long] <- paste0(substr(k[is_long], 1, 19), ".")
+        k
+    }
+) +
+    gg$coord_flip(
+        xlim = c(
+            p_ocor_ocorrencia_tipo_new_classif3[['ocorrencia_tipo_new']][1],
+            p_ocor_ocorrencia_tipo_new_classif3[['ocorrencia_tipo_new']][30]
+        )
+    ) +
+    gg$scale_fill_discrete(name = "Classif. ocor. aeron.") +
+    gg$theme(legend.position = "top") +
+    gg$ylab('Proporção de ocorrências aeronáuticas') +
+    gg$xlab('Tipo de ocorr. aeron.')
+
+
+```
+
+
+
+```{r}
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif2, y=1.14)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif2)
+
+
+#################################################################### Salva gráfico
+
+#source('funcoes_auxiliares/salva_grafico.R', encoding = "UTF-8")
+salva_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif3, y=1.14)
+
+#################################################################### Leitura gráfico
+
+#source('funcoes_auxiliares/leitura_grafico.R', encoding = "UTF-8")
+leitura_grafico(ggplot2_grafico = ggplot2_ocor_ocorrencia_tipo_new_classif3)
+
+```
+
+> É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc.
+
+# Conclusões e insights gerados
+
+> Apesar de incidentes (~ `r bs$paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs$paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes para que pessoas não sofram qualquer lesão corporal.
+
+> É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram com valores mínimo e máximo iguais à `r bs$paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` e `r bs$paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`, respectivamente.
+
+> Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de `r p_ocor_uf_classif_aux[1,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[1,c("Percentage")]`%), `r p_ocor_uf_classif_aux[2,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[2,c("Percentage")]`%), e `r p_ocor_uf_classif_aux[3,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[3,c("Percentage")]`%) que têm as maiores proporções de acidentes.
+
+> Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (`r p_ocor_saida_pista_classif_aux_sim_perc` > `r p_ocor_saida_pista_classif_aux_nao_perc`).
+
+> É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc.
+
+# Referências
+
+- [A Investigação de acidentes aeronáuticos](https://www3.fmb.unesp.br/sete/pluginfile.php/20354/mod_page/content/2/A_Investigacao_de_acidentes_aeronauticos_Conforme_a_Lei_no_7.pdf)<br>
+- [CENIPA - Ocorrências Aeronáuticas na Aviação Civil Brasileira](https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira)<br> 
+- [tidyverse](https://www.tidyverse.org/)<br>
+- [dplyr](https://dplyr.tidyverse.org/)<br>
+- [ggplot2](https://ggplot2.tidyverse.org/)<br>
+- [DBI](https://dbi.r-dbi.org/) <br>
+- [RPostgres](https://rpostgres.r-dbi.org/) <br>
+- [htmlwidgets](http://www.htmlwidgets.org/index.html)<br>
+- [Plotly](https://plot.ly/r)<br>
+- [HighCharts](https://www.highcharts.com/)<br>
+- [HighCharter](http://jkunst.com/highcharter/)<br>
+- [HighCharter Cookbook - Tom Bishop](https://www.tmbish.me/lab/highcharter-cookbook/)<br>
+- [R Markdown](https://rmarkdown.rstudio.com)<br>
+- [knitr](http://yihui.name/knitr)<br>
+- [yihui/xaringan](https://github.com/yihui/xaringan)<br>
+- [gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)<br>
+- [gadenbuie/xaringanExtra](https://github.com/gadenbuie/xaringanExtra)<br>
+- [Imagem: Ilustração por Allison Horst - Twitter: @allison_horst - Adaptado de Wickham e Grolemund, 2017](https://r-ladies-sao-paulo.github.io/xaringan/slides.html#7)<br>
+- [Imagem: Reproducible reports in R](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionVI/lessons/knitr_rmarkdown.html)

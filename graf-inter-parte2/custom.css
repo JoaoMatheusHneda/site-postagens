@@ -1,0 +1,50 @@
+#sidebar {
+    background: #02182e;
+  }
+
+#sidebar h2 {
+    background-color: #0453ac;
+  }
+
+h1, h2, h3, h4, h5, h6, legend {
+  color: #02182e;
+}
+
+#postamble {
+  background:#0453ac;
+  border-top:solid 10px #02182e;
+}
+
+#main :not(.leaflet-control) > a {
+    background-image: linear-gradient(180deg,#5d83ae,#5d83ae);
+    color: #0453ac;
+}
+
+/*
+.title {
+  text-align: center;
+  color: #1565C0;
+}
+
+.subtitle {
+  color: #1565C0;
+}
+
+
+
+#table-of-contents header {
+    color: #1565C0;
+}
+
+#table-of-contents h2 {
+    background-color: #1565C0;
+}
+
+a:hover {
+    color: #1565C0;
+}
+
+a:visited {
+    color: #1565C0;
+}
+*/

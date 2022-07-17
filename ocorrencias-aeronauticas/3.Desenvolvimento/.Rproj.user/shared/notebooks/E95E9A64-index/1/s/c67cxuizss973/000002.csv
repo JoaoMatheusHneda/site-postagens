@@ -1,0 +1,4 @@
+"0","```r
+mcnemar.test(x) #(com correÃ§Ã£o de continuidade)
+mcnemar.test(x,correct=F) #(sem correÃ§Ã£o de continuidade)
+```"

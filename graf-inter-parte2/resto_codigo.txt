@@ -1,0 +1,304 @@
+
+# HighCharter
+
+`HighCharter` é uma interface R que faz uso da biblioteca gráfica *Highcharts* <http://www.highcharts.com/> construída originalmente em javascript. Com essa biblioteca é possível construir vários tipos de gráficos interativos para diferentes objetos em R.
+
+## Fazendo os Primeiros Gráficos
+
+O pacote **HighCharter** permite criar gráficos utilizando duas funções diferentes:
+
+- highchart()
+- hchart()
+
+`highchart()`
+
+Se você está familiarizado com o pacote **ggplot2**, essa função é bem similar a **ggplot()**. Semelhantemente a essa função, diferentes argumentos podem ser utilizados na **highchart()** para alterar os principais elementos gráficos e mapear as variáveis.
+
+`hchart()`
+
+**hchart()** é uma função genérica para plotar diferentes gráficos de forma mais rápida para diferentes classes de objetos. Novamente comparando com o **ggplot2**, essa função é similar a **qplot()**. Para saber quais são os métodos suportados da função, basta utilizar o comando **methods(hchart)**.
+
+```{r echo = FALSE, message=FALSE}
+library(magrittr)
+library(highcharter)
+```
+
+```{r}
+methods(hchart)
+```
+
+Em resumo, **hchart()** será usado quando deseja-se fazer um gráfico mais rápido e **highchart()** quando deseja-se fazer gráficos mais complicados/robustos.
+
+Além do comando **hchart()** utilizado outros comandos também podem ser utilizados, como **hc_title()** e **hc_legend()** para alterar o título e mostrar/esconder a legenda dos dados, respectivamente. Esses comandos são utilizados junto com o operador %>% do pacote **magrittr**.
+
+
+```{r}
+library(magrittr)
+library(highcharter)
+
+# Carregando os dados
+data(tips, package = 'reshape2')
+data(diamonds, package = 'ggplot2')
+
+
+# Construindo os gráficos
+hchart(diamonds$price,
+       color="#ac040c") %>% hc_title(text = "Histograma")
+hchart(tips$sex,
+       color = "#ac040c") %>% hc_title(text = "Gráfico de Barras") %>% hc_legend(enabled = F)
+hchart(AirPassengers,
+       color = "#ac040c") %>% hc_title(text = "Série Temporal") %>% hc_legend(enabled = F)
+```
+
+## Gráfico de Linhas
+
+```{r}
+highchart() %>%
+  hc_add_series(data = women$weight) %>%
+  hc_add_series(data = women$height)
+```
+
+Como padrão, **highchart()** assume como padrão um gráfico de linhas. Ele também assume nome padrão para a série dos dados (i.e. Series 1, Series 2, etc). Mas também é possível alterar o nome da série`(name)`, cor `(color)`, entre outros. 
+
+```{r}
+highchart() %>%
+  hc_add_series(data = head(diamonds$depth,30), name = "depth", color = "red") %>%
+  hc_add_series(data = head(diamonds$price,30), name = "price", color = "blue")
+```
+
+```{r}
+data(citytemp)
+hc <- highchart() %>%
+  hc_plotOptions(line = list(color = "blue",
+                             marker = list(
+                               fillColor = "white",
+                               lineWidth = 2,
+                               lineColor = NULL
+                               )
+  )) %>%
+  hc_add_series(name = "Tokyo", data = citytemp$tokyo) %>%
+  hc_add_series(name = "London", data = citytemp$london,
+               marker = list(fillColor = "black"))
+
+hc %>%
+   hc_add_series(name = "New York",
+                data = citytemp$new_york,
+                color = "red")
+```
+
+## Gráfico de Densidade
+
+```{r}
+highchart() %>%
+  hc_add_series(data = density(rnorm(300)),
+                type = "area",
+                color = "white",
+                fillColor = "rgba(0,0,255,0.3)",
+                marker = list(lineColor = "red",
+                              lineWidth = 2,
+                              fillColor = "white")) %>%
+  hc_legend(enabled = F)
+```
+
+## Gráfico de Barras
+```{r}
+highchart() %>%
+  hc_chart(type ="column") %>%
+  hc_xAxis(categories = levels(tips$day)) %>%
+  hc_add_series(data = tapply(tips$total_bill,tips$day,sum))
+```
+
+
+<!-- ```{r} -->
+<!-- highchart() %>% -->
+<!--   hc_chart(type ="bar") %>% -->
+<!--   hc_xAxis(categories = levels(tips$day)) %>% -->
+<!--   hc_add_series(data = tapply(tips$total_bill,tips$day,sum)) -->
+<!-- ``` -->
+
+
+## Gráfico de Dispersão
+```{r}
+hchart(tips, type="scatter",hcaes(x="total_bill", y="tip")) %>% hc_title(text = "Gráfico de Dispersão")
+```
+
+```{r}
+hchart(tips, type="scatter",hcaes(x="total_bill", y="tip", group="day")) %>% hc_title(text = "Gráfico de Dispersão por Grupo")
+
+```
+
+<!-- ```{r} -->
+<!-- highchart() %>% -->
+<!--   hc_add_series(mpg, "scatter", hcaes(x = "displ", y = "cty", group = "class")) %>% -->
+<!--    hc_xAxis(title = list(text = "displ")) %>% -->
+<!--    hc_yAxis(title = list(text = "cty")) %>% -->
+<!--    hc_title(text = "Gráfico de Dispersão por Grupo") -->
+
+<!-- ``` -->
+
+## Gráfico de Setores
+
+```{r warning = FALSE, message = FALSE}
+aggregate(tips$total_bill, list(tips$day), sum) %>% 
+  rename(total_bill = Group.1,
+         day = x) %>% 
+  mutate(day_p = day/sum(day)*100) %>% 
+ hchart(type = "pie", hcaes(x=total_bill,
+                            y=day,
+                            label=day_p)) %>% 
+  hc_tooltip(pointFormat = paste('{point.y}<br/><b>{point.percentage:.2f}%</b>'),enabled= TRUE)
+```
+
+
+## Gráfico de Candlestick
+
+```{r message = FALSE, warning = FALSE}
+library(quantmod) # Pacote para carregar os dados do mercado financeiro
+x <- getSymbols("IBM", auto.assign = FALSE)
+x <- hchart(x)
+x
+```
+
+
+## Mapa
+
+Para gerar o mapa do Brasil, foram utilizadas as estimativas do total da população das Unidades da Federação brasileiras em 2019 disponibilizadas no arquivo estimativa_dou_2019.xls pelo IBGE (Instituto Brasileiro de Geografia e Estatística) no link [Dados IBGE](https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?=&t=resultados. Esse arquivo foi formatado e está disponível [aqui](./estimativa_dou_2019.xls).
+
+
+```{r message = FALSE, warning = FALSE}
+
+#options(encoding="UTF-8")
+
+## Carregando a base de dados formatada e baixada do site do IBGE
+
+xls <- readxl::read_xls(path = "estimativa_dou_2019.xls",
+                         sheet = 3,
+                         range = "A1:B28")
+
+colnames(xls) <- c("Estado","Populacao")
+
+#install.packages("knitr")
+knitr::kable(xls)
+```
+
+```{r message = FALSE, warning = FALSE}
+map <- get_data_from_map(download_map_data("countries/br/br-all"))
+map2 <- download_map_data("countries/br/br-all")
+# str(map)
+
+library(magrittr)
+library(dplyr)
+dados <- map[,c("woe-name","hc-a2")] %>% left_join(x=.,y=xls, by = c("woe-name" = "Estado"))
+# print(dados, n = Inf)
+
+hcmap(map="countries/br/br-all",
+      name = "Brasil",
+      data = dados,
+      value = "Populacao",
+      joinBy = "hc-a2",
+      dataLabels = list(enabled = TRUE, format = '{point.hc-a2}'))
+```
+
+
+<!-- ```{r} -->
+<!-- library(dplyr) -->
+<!-- mapdata <- get_data_from_map(download_map_data("countries/us/us-all")) -->
+<!-- set.seed(1234) -->
+
+<!-- data_fake <- mapdata %>% -->
+<!--   select(code = `hc-a2`) %>% -->
+<!--   mutate(value = 1e5 * abs(rt(nrow(.), df = 10))) -->
+
+<!-- h <- hcmap("countries/us/us-all", data = data_fake, value = "value", -->
+<!--       joinBy = c("hc-a2", "code"), name = "Fake data", -->
+<!--       dataLabels = list(enabled = TRUE, format = '{point.name}'), -->
+<!--       borderColor = "#FAFAFA", borderWidth = 0.1, -->
+<!--       tooltip = list(valueDecimals = 2, valuePrefix = "$", valueSuffix = " USD")) -->
+<!-- h -->
+<!-- ``` -->
+
+
+```{r eval=FALSE, echo = FALSE}
+library(MASS)
+
+dscars <- round(mvrnorm(n = 20, mu = c(1, 1), Sigma = matrix(c(1,0,0,1),2)), 2)
+dsplan <- round(mvrnorm(n = 10, mu = c(3, 4), Sigma = matrix(c(2,.5,2,2),2)), 2)
+dstrck <- round(mvrnorm(n = 15, mu = c(5, 1), Sigma = matrix(c(1,.5,.5,1),2)), 2)
+
+h <- highchart() %>%
+  hc_chart(type = "scatter", zoomType = "xy") %>%
+  hc_tooltip(
+    useHTML = TRUE,
+    pointFormat = paste0("<span style=\"color:{series.color};\">{series.options.icon}</span>",
+                         "{series.name}: <b>[{point.x}, {point.y}]</b><br/>")
+  ) %>%
+  hc_add_series(data = list_parse2(as.data.frame(dscars)),
+                marker = list(symbol = fa_icon_mark("car")),
+                icon = fa_icon("car"), name = "car") %>%
+  hc_add_series(data = list_parse2(as.data.frame(dsplan)),
+                marker = list(symbol = fa_icon_mark("plane")),
+                icon = fa_icon("plane"), name = "plane") %>%
+  hc_add_series(data = list_parse2(as.data.frame(dstrck)),
+                marker = list(symbol = fa_icon_mark("truck")),
+                icon = fa_icon("truck"), name = "truck")
+h
+```
+
+
+<!-- ```{r eval=FALSE, echo=FALSE} -->
+<!-- h <- highchart() %>% -->
+<!--   hc_title(text = "I'm a pirate looking chart") %>% -->
+<!--   hc_xAxis(categories = month.abb) %>% -->
+<!--   hc_defs(patterns = list( -->
+<!--     list(id = 'custom-pattern', -->
+<!--          path = list(d = 'M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11', -->
+<!--                      stroke = "black", -->
+<!--                      strokeWidth = 1 -->
+<!--          ) -->
+<!--     ) -->
+<!--   )) %>% -->
+<!--   hc_add_series(data = c(7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, -->
+<!--                          26.5, 23.3, 18.3, 13.9, 9.6), -->
+<!--                 type = "area", -->
+<!--                 fillColor = 'url(#custom-pattern)') %>% -->
+<!--   hc_add_theme(hc_theme_handdrawn()) -->
+<!-- h -->
+<!-- ``` -->
+
+
+```{r}
+data(unemployment)
+
+hcmap("countries/us/us-all-all", data = unemployment,
+      name = "Unemployment", value = "value", joinBy = c("hc-key", "code"),
+      borderColor = "transparent") %>%
+  hc_colorAxis(dataClasses = color_classes(c(seq(0, 10, by = 2), 50))) %>%
+  hc_legend(layout = "vertical", align = "right",
+            floating = TRUE, valueDecimals = 0, valueSuffix = "%")
+```
+
+
+# Conclusão
+
+Esse texto teve como objetivo apresentar alguns conceitos envolvendo Visualização de Dados, mostrar alguns comandos da biblioteca gráfica Highcharter do R e para fins de registro pessoal. Esse post não teve como objetivo mostrar todas as funções do pacote, mas mostrar algumas funcionalidades dele. Caso tenha interesse em aprender mais sobre a criação de gráficos interativos, consulte o post [Gráficos Interativos em R (Parte 2)]().
+
+Obrigado por ter lido.
+
+# Referências
+
+**Links**
+
+- [BB8 - ggplot2](https://www.r-graph-gallery.com/144-droid-bb-8-data-art/)
+- [htmlwidgets](http://www.htmlwidgets.org/index.html)
+- [ggplot2](https://ggplot2.tidyverse.org/)
+- [HighCharts](https://www.highcharts.com/)
+- [HighCharter](http://jkunst.com/highcharter/)
+- [Dados IBGE](https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?=&t=resultados)
+
+---
+
+<center> <img src="logo-pet-azul.png" style="width:300px;height:200px;"> </center>
+
+---
+
+

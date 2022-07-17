@@ -1,0 +1,4 @@
+"0","```r
+wilcox.test(x,y,paired=T, correct=T) #(com correÃ§Ã£o de continuidade)
+wilcox.test(x,y,paired=T,correct=F) #(sem correÃ§Ã£o de continuidade)
+```"

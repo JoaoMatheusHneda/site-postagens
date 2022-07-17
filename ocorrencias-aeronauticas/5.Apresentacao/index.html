@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Geração de relatórios e apresentações com R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="João Matheus Slujala Krüger Taborda Hneda" />
+    <script src="index_files/header-attrs/header-attrs.js"></script>
+    <link href="index_files/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="index_files/tile-view/tile-view.js"></script>
+    <script src="index_files/fabric/fabric.min.js"></script>
+    <link href="index_files/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="index_files/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#000000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="index_files/htmlwidgets/htmlwidgets.js"></script>
+    <script src="index_files/pymjs/pym.v1.js"></script>
+    <script src="index_files/widgetframe-binding/widgetframe.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Geração de relatórios e apresentações com R
+]
+.subtitle[
+## Aplicação prática no contexto de ocorrências aeronáuticas ✈🚁
+]
+.author[
+### João Matheus Slujala Krüger Taborda Hneda
+]
+.date[
+### 19/06/2022
+]
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Sumário
+
+
+
+.pull-left[
+
+### - Apresentação do problema
+
+### - Explicação do processo utilizado
+
+### - Hipóteses levantadas
+
+### - Análise exploratória
+
+### - Conclusões e insights gerados
+
+### - Referências
+
+]
+
+.pull-right[
+
+]
+
+---
+class: inverse center middle 
+
+# Apresentação do problema
+
+---
+
+
+
+## Apresentação do problema 
+
+&lt;div style="position: relative; left: 30px; top: -40px;"&gt; 
+
+.pull-left[
+- O trabalho consiste em gerar documentos (relatórios e apresentação) resultantes da exploração da base de dados "Ocorrências Aeronáuticas na Aviação Civil Brasileira"
+
+- A base de dados é composta por 5 tabelas que são gerenciadas pelo Centro de Investigação e Prevenção de Acidentes Aeronáuticos (CENIPA) - Organização Militar Brasileira vinculada ao Comando da Aeronáutica
+
+- Para obter as tabelas, consulte o link: https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira
+
+- As tabelas têm informações sobre: tipo da ocorrência, aeronaves envolvidas, local, data, etc.
+
+- Histórico de ocorrências aeronáuticas que ocorreram em solo brasileiro
+
+]
+
+&lt;/div&gt;
+
+.pull-right[
+
+&lt;img src="imagens/brasao_fab.jpg" width="100%" /&gt;
+]
+
+---
+
+## Apresentação do problema 
+
+&lt;img src="imagens/modelo_dados.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+class: inverse center middle 
+
+# Explicação do processo utilizado
+
+---
+
+## Explicação do processo utilizado
+
+&lt;div align="center", style="position: relative; left: 0px; top: 50px;"&gt; 
+
+.pull-left[
+
+Download de arquivos .csv [**(Link: Dados)**](https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira)
+
+&lt;img src="imagens/dados_e_recursos.PNG" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+&lt;/div&gt;
+
+.pull-right[
+
+&lt;div align="center", style="position: relative; left: 0px; top: -10px;"&gt; 
+
+Fluxo de trabalho com pacotes da &lt;br&gt; linguagem &lt;img src="imagens/Rlogo.png" width="20" height="18" style="display: inline-block; margin: 0" /&gt;
+
+&lt;img src="imagens/ciclo_ciencia_dados.jpg" width="150%" style="display: block; margin: auto;" /&gt;
+
+&lt;/div&gt;
+
+&lt;div style="position: relative; left: 0px; top: -50px;"&gt; 
+
+
+
+&lt;img src="../5.Apresentacao/index_files/figure-html/unnamed-chunk-7-1.png" width="500%" style="display: block; margin: auto;" /&gt;
+
+&lt;/div&gt;
+
+&lt;div style="position: relative; left: 0px; top: -80px;"&gt; 
+
+&lt;center&gt; Alguns pacotes da linguagem &lt;img src="imagens/Rlogo.png" width="20" height="18" style="display: inline-block; margin: 0" /&gt; &lt;/center&gt;
+
+&lt;/div&gt;
+
+]
+
+
+---
+class: inverse center middle 
+
+# Hipóteses levantadas
+
+---
+
+## Hipóteses levantadas
+
+.pull-left[
+
+**Q1)** Ocorrem mais incidentes do que acidentes (frequência maior de ocorrências menos graves)?
+
+**Q2)** O número de acidentes tem caído com o passar do tempo?
+
+**Q3)** Ocorrem mais acidentes em estados de maior atividade econômica (Ex.: SP, MG, RJ, PR)?
+
+**Q4)** Ocorrem mais acidentes na saída da pista?
+
+**Q5)** Quais são os tipos de ocorrência associadas com maior proporção de acidentes?
+
+]
+.pull-right[
+
+&lt;img src="imagens/hipoteses.jpg" width="60%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+class: inverse center middle 
+
+#  Análise exploratória
+
+---
+
+### Q1) Ocorrem mais incidentes do que acidentes (frequência maior de ocorrências menos graves)?
+
+&lt;div style="position: relative; top: -35px;"&gt; 
+
+.pull-left[
+
+Qual é a diferença entre acidente, incidente grave e incidente?
+
+- São ocorrências aeronáuticas, porém há diferenças  [(link)](https://www3.fmb.unesp.br/sete/pluginfile.php/20354/mod_page/content/2/A_Investigacao_de_acidentes_aeronauticos_Conforme_a_Lei_no_7.pdf): 
+
+- Incidente é toda ocorrência que não chega a se caracterizar como um acidente mas que afeta ou
+possa afetar a segurança da operação.
+
+- Incidente grave é um incidente que ocorre sob circunstâncias em que um acidente quase ocorreu. 
+
+- Acidente é uma ocorrência tal que qualquer pessoa sofra lesão grave ou morra.
+
+]
+
+&lt;/div&gt;
+
+
+
+.pull-right[
+
+&lt;div style="position: relative; left: -30px; top: -25px;"&gt; 
+
+<div id="htmlwidget-dae03c768af34005353d" style="width:595px;height:252px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-dae03c768af34005353d">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-9.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+]
+
+&lt;div style="position: relative; top: -35px;"&gt; 
+
+
+
+
+&gt; &lt;center&gt; Apesar de incidentes (~ 54.4%) ocorrerem mais do que incidentes graves ou acidentes (~ 45.6%), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas. &lt;/center&gt; 
+
+
+---
+
+
+### Q2) O número de acidentes tem caído com o passar do tempo?
+
+.pull-left[
+
+&lt;div style="position: relative; left: -30px; top: 0px;"&gt; 
+
+<div id="htmlwidget-e5f4860386ab8dcf88f5" style="width:610px;height:550px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e5f4860386ab8dcf88f5">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-11.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+]
+
+.pull-right[
+
+
+
+
+&gt; &lt;center&gt; É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram com valores mínimo e máximo iguais à 41% em 2013 e 55.2% em 2018, respectivamente. &lt;/center&gt;
+]
+
+
+
+
+---
+
+### Q3) Ocorrem mais acidentes em estados de maior atividade econômica?
+
+
+
+.pull-left[
+
+&lt;div style="position: relative; left: 0px; top: -15px;"&gt; 
+
+
+<div id="htmlwidget-0e34c85285387ec601a8" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0e34c85285387ec601a8">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-13.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+
+]
+
+
+
+
+.pull-right[
+
+&lt;div style="position: relative; left: -30px; top: -15px;"&gt; 
+
+<div id="htmlwidget-5450c3720fae2d98534a" style="width:570px;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5450c3720fae2d98534a">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-14.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+]
+
+
+
+
+&gt; &lt;center&gt; Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de MT(~56.9%), RR(~55.6%), e SE(~50%) que têm as maiores proporções de acidentes. &lt;/center&gt;
+
+
+---
+
+
+### Q4) Ocorrem mais acidentes na saída da pista?
+
+.pull-left[
+
+&lt;div style="position: relative; left: 0px; top: -25px;"&gt; 
+
+<div id="htmlwidget-464ac4dc4bbd6667cec0" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-464ac4dc4bbd6667cec0">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-16.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+&lt;/div&gt;
+
+]
+
+.pull-right[
+
+&lt;div style="position: relative; left: 0px; top: -25px;"&gt; 
+
+<div id="htmlwidget-0feec84db21d3a09ba31" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0feec84db21d3a09ba31">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-17.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+]
+
+
+
+
+&gt; &lt;center&gt; Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (51.8% &gt; 30.3%). &lt;/center&gt; 
+
+
+---
+### Q5) Quais são os tipos de ocorrência associadas com maior proporção de acidentes?
+
+.pull-left[
+
+&lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
+
+<div id="htmlwidget-050dd68ebc86a221ea1f" style="width:535px;height:400px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-050dd68ebc86a221ea1f">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-19.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+]
+
+.pull-right[
+
+&lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
+
+<div id="htmlwidget-294ef2a42d4dbefeb285" style="width:535px;height:400px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-294ef2a42d4dbefeb285">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-20.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+&lt;/div&gt;
+
+]
+
+&gt; &lt;center&gt; É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc. &lt;/center&gt;
+
+
+---
+class: inverse center middle
+
+# Conclusões e insights gerados
+
+---
+
+## Conclusões e insights gerados
+
+&lt;hr style="height:-10pt; visibility:hidden;"/&gt;
+
+&lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
+
+- Apesar de incidentes (~ 54.4%) ocorrerem mais do que incidentes graves ou acidentes (~ 45.6%), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas.
+
+&lt;hr style="height:0.75pt; visibility:hidden;" /&gt;
+
+- É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram de 41% em 2013 até 55.2% em 2018.
+
+&lt;hr style="height:0.75pt; visibility:hidden;" /&gt;
+
+- Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de MT(~56.9%), RR(~55.6%), e SE(~50%) que têm as maiores proporções de acidentes.
+
+&lt;hr style="height:0.75pt; visibility:hidden;" /&gt;
+
+- Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (51.8% &gt; 30.3%).
+
+&lt;hr style="height:0.75pt; visibility:hidden;" /&gt;
+
+- É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc.
+
+&lt;/div&gt;
+
+---
+
+## Referências
+
+.pull-left[
+- [A Investigação de acidentes aeronáuticos](https://www3.fmb.unesp.br/sete/pluginfile.php/20354/mod_page/content/2/A_Investigacao_de_acidentes_aeronauticos_Conforme_a_Lei_no_7.pdf)&lt;br&gt;
+- [CENIPA - Ocorrências Aeronáuticas na Aviação Civil Brasileira](https://dados.gov.br/dataset/ocorrencias-aeronauticas-da-aviacao-civil-brasileira)&lt;br&gt; 
+- [tidyverse](https://www.tidyverse.org/)&lt;br&gt;
+- [dplyr](https://dplyr.tidyverse.org/)&lt;br&gt;
+- [ggplot2](https://ggplot2.tidyverse.org/)&lt;br&gt;
+- [DBI](https://dbi.r-dbi.org/) &lt;br&gt;
+- [RPostgres](https://rpostgres.r-dbi.org/) &lt;br&gt;
+- [htmlwidgets](http://www.htmlwidgets.org/index.html)&lt;br&gt;
+- [Plotly](https://plot.ly/r)&lt;br&gt;
+- [HighCharts](https://www.highcharts.com/)&lt;br&gt;
+]
+
+.pull-right[
+- [HighCharter](http://jkunst.com/highcharter/)&lt;br&gt;
+- [HighCharter Cookbook - Tom Bishop](https://www.tmbish.me/lab/highcharter-cookbook/)&lt;br&gt;
+- [R Markdown](https://rmarkdown.rstudio.com)&lt;br&gt;
+- [knitr](http://yihui.name/knitr)&lt;br&gt;
+- [yihui/xaringan](https://github.com/yihui/xaringan)&lt;br&gt;
+- [gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)&lt;br&gt;
+- [gadenbuie/xaringanExtra](https://github.com/gadenbuie/xaringanExtra)&lt;br&gt;
+- [Imagem: Ilustração por Allison Horst - Twitter: @allison_horst - Adaptado de Wickham e Grolemund, 2017](https://r-ladies-sao-paulo.github.io/xaringan/slides.html#7)&lt;br&gt;
+- [Imagem: Reproducible reports in R](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionVI/lessons/knitr_rmarkdown.html)
+]
+
+---
+
+# Obrigado!
+
+.left-column[
+
+&lt;center&gt;
+
+&lt;hr style="height:60pt; visibility:hidden;"/&gt;
+
+Slides criados com pacotes da &lt;br&gt; Linguagem &lt;img src="imagens/Rlogo.png" width="20" height="18" style="display: inline-block; margin: 0" /&gt;
+
+[R Markdown](https://rmarkdown.rstudio.com)&lt;br&gt;
+[yihui/xaringan](https://github.com/yihui/xaringan)&lt;br&gt;
+[gadenbuie/xaringanthemer](https://github.com/gadenbuie/xaringanthemer)&lt;br&gt;
+[gadenbuie/xaringanExtra](https://github.com/gadenbuie/xaringanExtra)&lt;br&gt;
+[knitr](http://yihui.name/knitr)
+]
+
+
+&lt;div style="position: relative; left: 25px; top: -155px;"&gt; 
+
+.right-column[
+
+
+
+&lt;img src="imagens/markdown.png" width="700px" height="550px" style="display: block; margin: auto;" /&gt;
+
+[&lt;center&gt; Imagem: Reproducible reports in R &lt;/center&gt;](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionVI/lessons/knitr_rmarkdown.html)
+
+
+
+]
+
+&lt;/div&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%",
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
