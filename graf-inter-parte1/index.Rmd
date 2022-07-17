@@ -28,6 +28,10 @@ Mas o que é um **gráfico**?
 
 Os *gráficos* podem ser *estáticos* ou *interativos.* Em alguns casos, os *gráficos estáticos* podem decepcionar os usuários pelo fato de serem inanimados. Em contrapartida, os *gráficos interativos* são criados a partir de elementos animados que aumentam a capacidade de retenção de informação através da interatividade, fato que agrada a muitas pessoas. Sabendo disso, esse texto foi escrito com o objetivo de iniciar uma série de posts para mostrar algumas bibliotecas do R que auxiliam na confecção de gráficos interativos. Para iniciar essa série de posts, o texto deste post irá focar na criação de gráficos com os pacotes **plotly** e **dygraphs**.
 
+- Para acessar os códigos utilizados que geram este post, acesse o link abaixo:
+
+    - https://github.com/JoaoMatheusHneda/site-postagens/tree/main/graf-inter-parte1
+
 # Conceitos e htmlwidgets
 
 O pacote [htmlwidgets](http://www.htmlwidgets.org/index.html) foi criado para auxiliar na tarefa de criar gráficos interativos no R. Esse pacote funciona como um [framework](http://www.htmlwidgets.org/develop_intro.html) para embutir dentro do R as visualizações feitas em JavaScript. O htmlwidgets pode ser usado nos scripts em R e também ser embutido nos relatórios de [R Markdown](https://rmarkdown.rstudio.com/) e aplicações em [Shiny](https://shiny.rstudio.com/gallery/).

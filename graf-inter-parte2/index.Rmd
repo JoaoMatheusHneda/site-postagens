@@ -105,6 +105,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Esse texto foi escrito como parte de uma série de posts para mostrar algumas bibliotecas do R que auxiliam na construção de gráficos interativos. Caso não tenha lido a parte 1 dessa série de posts, consulte o link [Gráficos Interativos em R - Parte 1 - Plotly e DyGraphs](/site/post/graf-inter-parte1/post/). Se já fez a leitura da parte 1, o texto da parte 2 foi montada para mostrar mais detalhes sobre gŕaficos interativos com o pacote **highcharter**.
 
+- Para acessar os códigos utilizados que geram este post, acesse o link abaixo:
+
+    - https://github.com/JoaoMatheusHneda/site-postagens/tree/main/graf-inter-parte2
+
 `Lembretes:`
 
 - Para mexer com essas bibliotecas é interessante que se tenha conhecimento introdutório / intermediário em R, como por exemplo, conceitos como objetos e classes do R, vetores, matrizes, data frames, listas e alguns pacotes do tidyverse (como tidyr, dplyr, ggplot2 e magrittr). 
