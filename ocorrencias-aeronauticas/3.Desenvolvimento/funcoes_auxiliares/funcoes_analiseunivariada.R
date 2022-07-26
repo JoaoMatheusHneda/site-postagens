@@ -1,10 +1,9 @@
 
 #------------------------------------------------------------------------------------------------------
-library(magrittr)
-box::use("bs" = base)
-box::use("dp" = dplyr)
-box::use("fc" = forcats)
-box::use("gg" = ggplot2)
+try(library(magrittr, include.only = c("%>%")), silent=TRUE)
+try(namespace::registerNamespace('dp', loadNamespace('dplyr')), silent=TRUE)
+try(namespace::registerNamespace('fc', loadNamespace('forcats')), silent=TRUE)
+try(namespace::registerNamespace('gg',loadNamespace('ggplot2')), silent=TRUE)
 
 # Variável Qualitativa
 calcula_tab_frequencia <- function(tabela_de_entrada,nome_variavel,decreasing=FALSE){
@@ -36,11 +35,11 @@ calcula_tab_frequencia_dplyr <- function(tabela_de_entrada,nome_variavel,
 
     
     tabela_saida <- tabela_de_entrada %>% 
-        dp$select({{nome_variavel}}) %>% 
-        dp$group_by({{nome_variavel}}) %>%
-        dp$summarise(`Frequency` = dplyr::n()) %>% 
-        dp$rename(`Category` = {{nome_variavel}}) %>% 
-        bs$as.data.frame()
+        dp::select({{nome_variavel}}) %>% 
+        dp::group_by({{nome_variavel}}) %>%
+        dp::summarise(`Frequency` = dplyr::n()) %>%
+        dp::rename(`Category` = {{nome_variavel}}) %>% 
+        as.data.frame()
     
         if((!is.null(specific_order)) && (!is.null(decreasing)) ) {
             stop("Duas condições de ordenação foram determinadas. Revise o código!")
@@ -50,26 +49,26 @@ calcula_tab_frequencia_dplyr <- function(tabela_de_entrada,nome_variavel,
             
             if (!is.null(specific_order)) {
                 tabela_saida <- tabela_saida %>%
-                    dplyr::arrange(match(`Category`, specific_order))
+                    dp::arrange(match(`Category`, specific_order))
             }
             
             if ((!is.null(decreasing)) && (decreasing == TRUE)) {
                 tabela_saida <-
-                    tabela_saida %>% dp$arrange(dplyr::desc(`Frequency`))
+                    tabela_saida %>% dp::arrange(dp::desc(`Frequency`))
             } else if ((!is.null(decreasing)) &&
                        (decreasing == FALSE)) {
-                tabela_saida <- tabela_saida %>% dp$arrange(`Frequency`)
+                tabela_saida <- tabela_saida %>% dp::arrange(`Frequency`)
             }
             
             tabela_saida <- tabela_saida %>%
-                dp$mutate(`Percentage` = `Frequency` / sum(`Frequency`) * 100,
+                dp::mutate(`Percentage` = `Frequency` / sum(`Frequency`) * 100,
                           `Cumulative.Frequency` = cumsum(`Frequency`),
                           `Cumulative.Percentage` = cumsum(`Percentage`)) %>%
-                bs$as.data.frame()
+                as.data.frame()
             
             
-            tabela_saida[,"Frequency"] <- bs$as.numeric(tabela_saida[,"Frequency"])
-            tabela_saida[,"Cumulative.Frequency"] <- bs$as.numeric(tabela_saida[,"Cumulative.Frequency"])
+            tabela_saida[,"Frequency"] <- as.numeric(tabela_saida[,"Frequency"])
+            tabela_saida[,"Cumulative.Frequency"] <- as.numeric(tabela_saida[,"Cumulative.Frequency"])
             # if(!is.numeric(tabela_saida[,"Category"])){
             #     tabela_saida[,"Category"] <- fc$fct_inorder(tabela_saida[,"Category"])
             # }
@@ -87,21 +86,21 @@ grafico_tab_frequencia <- function(table_count_prop,nome_variavel,cor_grafico="#
                                    hjust_e=-0.17,hjust_d=0.15,size=4.5,tx1=0.05,tx2=1.05,
                                    xlab,ylab){
     
-    gg_count_prop <- gg$ggplot(gg$aes(x=Category,y=Frequency),
+    gg_count_prop <- gg::ggplot(gg::aes(x=Category,y=Frequency),
               data=table_count_prop) +
-        gg$theme_classic() + gg$geom_col(fill=cor_grafico) +
-        gg$geom_col(fill=cor_grafico) +
-        gg$geom_text(gg$aes(label=Frequency,
-                            y=Frequency+tx1*bs$mean(Frequency)),
-                     position = gg$position_nudge(x=hjust_e,y=0.9),
+        gg::theme_classic() + gg::geom_col(fill=cor_grafico) +
+        gg::geom_col(fill=cor_grafico) +
+        gg::geom_text(gg::aes(label=Frequency,
+                            y=Frequency+tx1*mean(Frequency)),
+                     position = gg::position_nudge(x=hjust_e,y=0.9),
                      size=size) +
-        gg$geom_text(gg$aes(label=bs$paste0('(',bs$round(Percentage,2),'%)'),
-                            y=Frequency+tx1*bs$mean(Frequency)),
-                     position = gg$position_nudge(x=hjust_d,y=0.9),
+        gg::geom_text(gg::aes(label=paste0('(',round(Percentage,2),'%)'),
+                            y=Frequency+tx1*mean(Frequency)),
+                     position = gg::position_nudge(x=hjust_d,y=0.9),
                      size=size) +
-        gg$expand_limits(y=max(table_count_prop['Frequency'])*tx2) +
-        gg$xlab(xlab) +
-        gg$ylab(ylab)
+        gg::expand_limits(y=max(table_count_prop['Frequency'])*tx2) +
+        gg::xlab(xlab) +
+        gg::ylab(ylab)
     
     return(gg_count_prop)
         
@@ -110,13 +109,13 @@ grafico_tab_frequencia <- function(table_count_prop,nome_variavel,cor_grafico="#
 
 ## Only Percentage
 grafico_tab_frequencia2 <- function(table_count_prop,nome_variavel,cor_grafico,size,tx1=0.06,tx2=1.07){
-    gg_count_prop <-  gg$ggplot(gg$aes(x=Category,y=Frequency),data=table_count_prop) +  gg$theme_classic() + 
-        gg$geom_col(fill=cor_grafico) +
-        gg$geom_text(gg$aes(label=paste0(Percentage,'%'),y=Frequency+tx1*mean(Frequency)),
-                                                                    position = gg$position_nudge(y=0.9),
+    gg_count_prop <-  gg::ggplot(gg::aes(x=Category,y=Frequency),data=table_count_prop) +  gg::theme_classic() + 
+        gg::geom_col(fill=cor_grafico) +
+        gg::geom_text(gg::aes(label=paste0(Percentage,'%'),y=Frequency+tx1*mean(Frequency)),
+                                                                    position = gg::position_nudge(y=0.9),
                                                                     size=size) +
-        gg$expand_limits(y=max(table_count_prop['Frequency'])*tx2)+
-        gg$coord_flip()
+        gg::expand_limits(y=max(table_count_prop['Frequency'])*tx2)+
+        gg::coord_flip()
 
     # assign(x=paste0('gg_count_prop',nome_variavel),value=gg_count_prop,envir=.GlobalEnv)
     # return( 

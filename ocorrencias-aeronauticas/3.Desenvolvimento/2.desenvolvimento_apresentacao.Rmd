@@ -15,6 +15,25 @@ output:
       countIncrementalSlides: true
 ---
 
+<!-- Código para atualizar página ao abrir -->
+
+<script type='text/javascript'>
+
+(function()
+{
+  if( window.localStorage )
+  {
+    if( !localStorage.getItem('firstLoad') )
+    {
+      localStorage['firstLoad'] = true;
+      window.location.reload();
+    }  
+    else
+      localStorage.removeItem('firstLoad');
+  }
+})();
+
+</script>
 
 ```{r setup, include=FALSE}
 # `r Sys.Date()`
@@ -47,28 +66,38 @@ source(paste0(endereco_funcoes_auxiliares,'salva_grafico.R'), encoding = "UTF-8"
 source(paste0(endereco_funcoes_auxiliares,'leitura_grafico.R'), encoding = "UTF-8")
 ```
 
-```{r define_alias_package, echo=FALSE, message=FALSE}
+```{r define_alias_package, message=FALSE, error=TRUE, include=FALSE}
+######## Pacotes básicos
+#base::library(namespace)
+base::library(magrittr, include.only = base::c("%>%"))
+namespace::registerNamespace('mg', base::loadNamespace('magrittr')) %>% base::try()
 
-#install.packages("box")
+namespace::registerNamespace('bs', base::loadNamespace('base')) %>% base::try()
+namespace::registerNamespace('meth', bs::loadNamespace('methods')) %>% bs::try()
+namespace::registerNamespace('ds', bs::loadNamespace('datasets')) %>% bs::try()
+namespace::registerNamespace('ut', bs::loadNamespace('utils')) %>% bs::try()
+namespace::registerNamespace('grD', bs::loadNamespace('grDevices')) %>% bs::try()
+namespace::registerNamespace('gph', bs::loadNamespace('graphics')) %>% bs::try()
+namespace::registerNamespace('sta', bs::loadNamespace('stats')) %>% bs::try()
 
-box::use("bs" = base)
-box::use("ut" = utils)
-box::use("sta" = stats)
-box::use("mg" = magrittr); library(magrittr)
-box::use("tb" = tibble)
-box::use("dp" = dplyr)
-box::use("gg" = ggplot2)
-box::use("hc" = highcharter)
-box::use("pl" = plotly)
-box::use("dbi" = DBI)
-box::use("rp" = RPostgres)
-box::use("fc" = forcats)
-box::use("st" = stringr)
 
-box::use("kn" = knitr)
-box::use("hw" = htmlwidgets)
-box::use("wb" = webshot)
-box::use("wf" = widgetframe)
+######## Pacotes adicionais
+namespace::registerNamespace('rdr', bs::loadNamespace('readr')) %>% bs::try()
+namespace::registerNamespace('tb', bs::loadNamespace('tibble')) %>% bs::try()
+namespace::registerNamespace('dp', bs::loadNamespace('dplyr')) %>% bs::try()
+namespace::registerNamespace('ti', bs::loadNamespace('tidyr')) %>% bs::try()
+namespace::registerNamespace('fc', bs::loadNamespace('forcats')) %>% bs::try()
+namespace::registerNamespace('stg', bs::loadNamespace('stringr')) %>% bs::try()
+namespace::registerNamespace('gg', bs::loadNamespace('ggplot2')) %>% bs::try()
+namespace::registerNamespace('hc', bs::loadNamespace('highcharter')) %>% bs::try()
+namespace::registerNamespace('pl', bs::loadNamespace('plotly')) %>% bs::try()
+namespace::registerNamespace('dbi', bs::loadNamespace('DBI')) %>% bs::try()
+namespace::registerNamespace('rp', bs::loadNamespace('RPostgres')) %>% bs::try()
+
+namespace::registerNamespace('kn', bs::loadNamespace('knitr')) %>% bs::try()
+namespace::registerNamespace('hw', bs::loadNamespace('htmlwidgets')) %>% bs::try()
+namespace::registerNamespace('wb', bs::loadNamespace('webshot')) %>% bs::try()
+namespace::registerNamespace('wf', bs::loadNamespace('widgetframe')) %>% bs::try()
 ```
 
 ```{r xaringan-themer, include=FALSE, warning=FALSE}
@@ -228,9 +257,9 @@ knitr::include_graphics(paste0(endereco_imagens,"ciclo_ciencia_dados.jpg"))
 
 ```{r echo=FALSE, out.width="500%", fig.align='center'}
 comb2pngs <- function(imgs, bottom_text = NULL){
-    img_list <- list()
-    for (i in 1:length(imgs)) {
-        img_list[[i]] <- grid::rasterGrob(as.raster(png::readPNG(imgs[i])),
+    img_list <- bs::list()
+    for (i in 1:bs::length(imgs)) {
+        img_list[[i]] <- grid::rasterGrob(grD::as.raster(png::readPNG(imgs[i])),
                                           interpolate = FALSE)
     }
     gridExtra::grid.arrange(
@@ -330,12 +359,14 @@ possa afetar a segurança da operação.
 
 <div style="position: relative; left: -30px; top: -25px;"> 
 
-```{r, echo=FALSE} 
-ggplot2_grafico_plotly <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_p_ocor_classif),"_plotly.rds"))
+<button onClick="window.location.reload();">Refresh chart</button>
 
-wf$frameWidget(ggplot2_grafico_plotly, width = "595px")
+```{r echo=FALSE} 
+ggplot2_grafico_plotly <-
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_p_ocor_classif),"_plotly.rds"))
+
+wf::frameWidget(ggplot2_grafico_plotly, width = "595px")
 ```
 
 </div>
@@ -345,13 +376,13 @@ wf$frameWidget(ggplot2_grafico_plotly, width = "595px")
 <div style="position: relative; top: -35px;"> 
 
 ```{r echo=FALSE, eval=TRUE}
-p_incidente <- bs$readRDS(file = bs$paste0(endereco_graficos_estaticos,
+p_incidente <- bs::readRDS(file = bs::paste0(endereco_graficos_estaticos,
                             substitute(p_incidente),
                             ".rds"))
 ```
 
 
-> <center> Apesar de incidentes (~ `r bs$paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs$paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas. </center> 
+> <center> Apesar de incidentes (~ `r bs::paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs::paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas. </center> 
 
 
 ---
@@ -359,23 +390,29 @@ p_incidente <- bs$readRDS(file = bs$paste0(endereco_graficos_estaticos,
 
 ### Q2) O número de acidentes tem caído com o passar do tempo?
 
+<div style="position: relative; left: 0px; top: -30px;"> 
+
+<button onClick="window.location.reload();">Refresh charts</button>
+
+</div>
+
 .pull-left[
 
-<div style="position: relative; left: -30px; top: 0px;"> 
+<div style="position: relative; left: -30px; top: -30px;"> 
 
 ```{r, echo=FALSE} 
 ggplot2_grafico_plotly1 <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_p_ocor_ano),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_p_ocor_ano),"_plotly.rds"))
 
 ggplot2_grafico_plotly2 <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_ocor_ano_classif_lm),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_ocor_ano_classif_lm),"_plotly.rds"))
 
 
-wf$frameWidget(pl$subplot(ggplot2_grafico_plotly1,
+wf::frameWidget(pl::subplot(ggplot2_grafico_plotly1,
                                        ggplot2_grafico_plotly2,
-                                       nrows=2) %>% pl$layout(legend = list(y = 0.51)),
+                                       nrows=2) %>% pl::layout(legend = list(y = 0.51)),
                width = "610px",height = "550px")
 ```
 
@@ -386,13 +423,13 @@ wf$frameWidget(pl$subplot(ggplot2_grafico_plotly1,
 .pull-right[
 
 ```{r echo=FALSE}
-p_nao_incidente_ano <- bs$readRDS(file = bs$paste0(endereco_graficos_estaticos,
-                            substitute(p_nao_incidente_ano),
+p_nao_incidente_ano <- bs::readRDS(file = bs::paste0(endereco_graficos_estaticos,
+                            bs::substitute(p_nao_incidente_ano),
                             ".rds"))
 ```
 
 
-> <center> É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram com valores mínimo e máximo iguais à `r bs$paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` e `r bs$paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`, respectivamente. </center>
+> <center> É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram com valores mínimo e máximo iguais à `r bs::paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` e `r bs::paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`, respectivamente. </center>
 ]
 
 
@@ -400,20 +437,20 @@ p_nao_incidente_ano <- bs$readRDS(file = bs$paste0(endereco_graficos_estaticos,
 
 ---
 
-### Q3) Ocorrem mais acidentes em estados de maior atividade econômica?
 
+### Q3) Ocorrem mais acidentes em estados de maior atividade econômica?
 
 
 .pull-left[
 
-<div style="position: relative; left: 0px; top: -15px;"> 
+<div style="position: relative; left: 0px; top: -20px;"> 
 
 
 ```{r echo=FALSE}
-plot <- bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                            substitute(plot),
+plot <- bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                            bs::substitute(plot),
                             ".rds"))
-wf$frameWidget(plot,height = "450px")
+wf::frameWidget(plot,height = "450px")
 ```
 
 </div>
@@ -422,29 +459,33 @@ wf$frameWidget(plot,height = "450px")
 ]
 
 
-
-
 .pull-right[
 
-<div style="position: relative; left: -30px; top: -15px;"> 
+<div style="position: relative; left: 400px; top: -35px;"> 
+
+<button onClick="window.location.reload();">Refresh charts</button>
+
+</div>
+
+<div style="position: relative; left: -30px; top: -35px;"> 
 
 ```{r echo=FALSE}
 
 ggplot2_grafico_plotly1 <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_ocor_uf_classif1),"_plotly.rds")) #%>% 
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_ocor_uf_classif1),"_plotly.rds")) #%>% 
     #pl$layout(showlegend = FALSE)
 
 ggplot2_grafico_plotly2 <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_ocor_uf_classif2),"_plotly.rds")) #%>% 
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_ocor_uf_classif2),"_plotly.rds")) #%>% 
     #pl$layout(legend = list(y = 0.51))
 
-wf$frameWidget(
-    pl$subplot(ggplot2_grafico_plotly1,
+wf::frameWidget(
+    pl::subplot(ggplot2_grafico_plotly1,
                ggplot2_grafico_plotly2,
                nrows = 2) %>%
-        pl$style(showlegend = FALSE, traces = 1:3),
+        pl::style(showlegend = FALSE, traces = 1:3),
     width = "570px",
     height = "450px"
 )
@@ -454,15 +495,16 @@ wf$frameWidget(
 ]
 
 ```{r echo=FALSE}
-p_ocor_uf_classif_aux <- bs$readRDS(file = bs$paste0(
+p_ocor_uf_classif_aux <- bs::readRDS(file = bs::paste0(
                endereco_graficos_estaticos,
-               substitute(p_ocor_uf_classif_aux),
+               bs::substitute(p_ocor_uf_classif_aux),
                ".rds"
            ))
 ```
 
+<div style="position: relative; left: 0px; top: -25px;"> <center> Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de `r p_ocor_uf_classif_aux[1,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[1,c("Percentage")]`%), `r p_ocor_uf_classif_aux[2,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[2,c("Percentage")]`%), e `r p_ocor_uf_classif_aux[3,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[3,c("Percentage")]`%) que têm as maiores proporções de acidentes. </center> </div>
 
-> <center> Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de `r p_ocor_uf_classif_aux[1,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[1,c("Percentage")]`%), `r p_ocor_uf_classif_aux[2,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[2,c("Percentage")]`%), e `r p_ocor_uf_classif_aux[3,c("ocorrencia_uf")]`(~`r p_ocor_uf_classif_aux[3,c("Percentage")]`%) que têm as maiores proporções de acidentes. </center>
+
 
 
 ---
@@ -472,14 +514,14 @@ p_ocor_uf_classif_aux <- bs$readRDS(file = bs$paste0(
 
 .pull-left[
 
-<div style="position: relative; left: 0px; top: -25px;"> 
+<div style="position: relative; left: 0px; top: -10px;"> 
 
 ```{r, echo=FALSE} 
 ggplot2_grafico_plotly <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_p_ocor_saida_pista),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_p_ocor_saida_pista),"_plotly.rds"))
 
-wf$frameWidget(ggplot2_grafico_plotly, height = "450px")
+wf::frameWidget(ggplot2_grafico_plotly, height = "450px")
 ```
 </div>
 
@@ -487,27 +529,33 @@ wf$frameWidget(ggplot2_grafico_plotly, height = "450px")
 
 .pull-right[
 
-<div style="position: relative; left: 0px; top: -25px;"> 
+<div style="position: relative; left: 400px; top: -35px;"> 
+
+<button onClick="window.location.reload();">Refresh charts</button>
+
+</div>
+
+<div style="position: relative; left: 0px; top: -35px;"> 
 
 ```{r echo=FALSE}
 
 ggplot2_grafico_plotly1 <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_ocor_saida_pista_classif1),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_ocor_saida_pista_classif1),"_plotly.rds"))
 
 # ggplot2_grafico_plotly2 <-
-#     bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-#                                 substitute(ggplot2_ocor_saida_pista_classif2),"_plotly.rds"))
+#     bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+#                                 bs::substitute(ggplot2_ocor_saida_pista_classif2),"_plotly.rds"))
 # 
-# wf$frameWidget(
-#     pl$subplot(ggplot2_grafico_plotly1,
+# wf::frameWidget(
+#     pl::subplot(ggplot2_grafico_plotly1,
 #                ggplot2_grafico_plotly2,
 #                nrows = 2) %>%
-#         pl$style(showlegend = FALSE, traces = 1:3),
+#         pl::style(showlegend = FALSE, traces = 1:3),
 #     height = "450px"
 # )
 
-wf$frameWidget(ggplot2_grafico_plotly1,height = "450px")
+wf::frameWidget(ggplot2_grafico_plotly1,height = "450px")
 
 ```
 
@@ -516,43 +564,43 @@ wf$frameWidget(ggplot2_grafico_plotly1,height = "450px")
 ]
 
 ```{r echo=FALSE}
-p_ocor_saida_pista_classif_aux <- bs$readRDS(file = bs$paste0(
+p_ocor_saida_pista_classif_aux <- bs::readRDS(file = bs::paste0(
     endereco_graficos_estaticos,
-    substitute(p_ocor_saida_pista_classif_aux),
+    bs::substitute(p_ocor_saida_pista_classif_aux),
     ".rds"
 ))
 
 p_ocor_saida_pista_classif_aux_nao_perc <-
-    bs$readRDS(file = bs$paste0(
+    bs::readRDS(file = bs::paste0(
         endereco_graficos_estaticos,
-        substitute(p_ocor_saida_pista_classif_aux_nao_perc),
+        bs::substitute(p_ocor_saida_pista_classif_aux_nao_perc),
         ".rds"
     ))
 p_ocor_saida_pista_classif_aux_sim_perc <-
-    bs$readRDS(file = bs$paste0(
+   bs::readRDS(file = bs::paste0(
         endereco_graficos_estaticos,
-        substitute(p_ocor_saida_pista_classif_aux_sim_perc),
+        bs::substitute(p_ocor_saida_pista_classif_aux_sim_perc),
         ".rds"
     ))
 ```
 
 
-> <center> Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (`r p_ocor_saida_pista_classif_aux_sim_perc` > `r p_ocor_saida_pista_classif_aux_nao_perc`). </center> 
+<div style="position: relative; left: 0px; top: -10px;"> <center> Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (`r p_ocor_saida_pista_classif_aux_sim_perc` > `r p_ocor_saida_pista_classif_aux_nao_perc`). </center> </div>
 
 
 ---
-### Q5) Quais são os tipos de ocorrência associadas com maior proporção de acidentes?
+### Q5) Quais são os tipos de ocorrência com maior (%) de acidentes?
 
 .pull-left[
 
-<div style="position: relative; left: 0px; top: -35px;"> 
+<div style="position: relative; left: 0px; top: -10px;"> 
 
 ```{r, echo=FALSE} 
 ggplot2_grafico_plotly <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_p_ocor_ocorrencia_tipo_new),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_p_ocor_ocorrencia_tipo_new),"_plotly.rds"))
 
-wf$frameWidget(ggplot2_grafico_plotly, height = "400px", width = "535px")
+wf::frameWidget(ggplot2_grafico_plotly, height = "450px", width = "535px")
 ```
 
 </div>
@@ -561,21 +609,27 @@ wf$frameWidget(ggplot2_grafico_plotly, height = "400px", width = "535px")
 
 .pull-right[
 
+<div style="position: relative; left: 400px; top: -35px;"> 
+
+<button onClick="window.location.reload();">Refresh charts</button>
+
+</div>
+
 <div style="position: relative; left: 0px; top: -35px;"> 
 
 ```{r, echo=FALSE} 
 ggplot2_grafico_plotly <-
-    bs$readRDS(file = bs$paste0(endereco_graficos_interativos,
-                                substitute(ggplot2_ocor_ocorrencia_tipo_new_classif3),"_plotly.rds"))
+    bs::readRDS(file = bs::paste0(endereco_graficos_interativos,
+                                bs::substitute(ggplot2_ocor_ocorrencia_tipo_new_classif3),"_plotly.rds"))
 
-wf$frameWidget(ggplot2_grafico_plotly, height = "400px", width = "535px")
+wf::frameWidget(ggplot2_grafico_plotly, height = "450px", width = "535px")
 ```
 
 </div>
 
 ]
 
-> <center> É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc. </center>
+<div style="position: relative; left: 0px; top: -5px;"> <center> É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc. </center> </div>
 
 
 ---
@@ -591,11 +645,11 @@ class: inverse center middle
 
 <div style="position: relative; left: 0px; top: -35px;"> 
 
-- Apesar de incidentes (~ `r bs$paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs$paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas.
+- Apesar de incidentes (~ `r bs::paste0(p_incidente,"%")`) ocorrerem mais do que incidentes graves ou acidentes (~ `r bs::paste0(100-p_incidente,"%")`), este último número ainda é preocupante. O ideal é que se tenha uma porcentagem mais baixa de incidentes graves e acidentes pois essas são mais danosas.
 
 <hr style="height:0.75pt; visibility:hidden;" />
 
-- É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram de `r bs$paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` até `r bs$paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`.
+- É possível perceber que o número absoluto de ocorrências aeronáuticas teve uma queda até o ano de 2016 e voltou a subir a partir desse ano. Nota-se que essa tendência também ocorre nas ocorrências de classificação do tipo "INCIDENTE" e em menor grau na classificação do tipo "INCIDENTE GRAVE". Comportamento diferente é observado na tendência do número de ocorrências aeronáuticas com classificação do tipo "ACIDENTE" que se manteve em queda desde 2012. Além disso, é importante ressaltar que as somas das frequências relativas de "ACIDENTES" e "INCIDENTES GRAVES" ao longo dos anos variaram de `r bs::paste0(round(p_nao_incidente_ano[1],1),"%")` em `r names(p_nao_incidente_ano)[1]` até `r bs::paste0(round(p_nao_incidente_ano[2],1),"%")` em `r names(p_nao_incidente_ano)[2]`.
 
 <hr style="height:0.75pt; visibility:hidden;" />
 
@@ -667,7 +721,7 @@ Slides criados com pacotes da <br> Linguagem <img src="imagens/Rlogo.png" width=
 
 
 ```{r echo=FALSE, out.width="700px", out.height="550px",fig.align='center'}
-kn$include_graphics(paste0(endereco_imagens, "markdown.png"))
+kn::include_graphics(bs::paste0(endereco_imagens, "markdown.png"))
 ```
 
 [<center> Imagem: Reproducible reports in R </center>](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionVI/lessons/knitr_rmarkdown.html)

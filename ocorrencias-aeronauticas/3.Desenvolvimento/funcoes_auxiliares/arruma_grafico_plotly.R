@@ -1,20 +1,21 @@
 arruma_grafico_plotly <- function(ggplot2_grafico, subir_eixo_y = F, x=0,y=1){
-    box::use("mg" = magrittr); library(magrittr)
-    box::use("pl" = plotly)
+    try(library(magrittr, include.only = c("%>%")), silent=TRUE)
+    try(namespace::registerNamespace('pl',loadNamespace('plotly')), silent=TRUE)
+    try(namespace::registerNamespace('stg', loadNamespace('stringr')), silent=TRUE)
     
-    p <- pl$ggplotly(ggplot2_grafico)
-    fig <- pl$plotly_build(p)
+    p <- pl::ggplotly(ggplot2_grafico)
+    fig <- pl::plotly_build(p)
     
     
-    for (i in bs$seq_along(fig$x$data)){
-        if(fig$x$data[[i]]$text %>% bs$grepl(pattern="<br") %>% bs$any()){
+    for (i in seq_along(fig$x$data)){
+        if(fig$x$data[[i]]$text %>% grepl(pattern="<br") %>% any()){
             
-            text <- st$str_split(fig$x$data[[i]]$text, ":")
+            text <- stg::str_split(fig$x$data[[i]]$text, ":")
             position <- text %>%
-                lapply(FUN=function(x) c(bs$grep(x,pattern="<br"),length(x)))
+                lapply(FUN=function(x) c(grep(x,pattern="<br"),length(x)))
             fig$x$data[[i]]$text <- lapply(text, FUN = function(x) x[position[[1]]]) %>%
-                lapply(FUN = function(y) st$word(y,sep = "<br", 1)) %>%
-                lapply(FUN = function(z) bs$trimws(z,which = "both"))
+                lapply(FUN = function(y) stg::word(y,sep = "<br", 1)) %>%
+                lapply(FUN = function(z) trimws(z,which = "both"))
             
             
             text_aux <- fig$x$data[[i]]$text[[1]]
@@ -23,12 +24,12 @@ arruma_grafico_plotly <- function(ggplot2_grafico, subir_eixo_y = F, x=0,y=1){
             }
             
             fig$x$data[[i]]$text <- fig$x$data[[i]]$text %>% 
-                lapply(FUN = function(k) st$str_c("(",st$str_c(k,collapse = ","),")")) %>%
-                bs$unlist()
+                lapply(FUN = function(k) stg::str_c("(",stg::str_c(k,collapse = ","),")")) %>%
+                unlist()
         }               
         
         
-        if(fig$x$data[[i]]$hovertext %>% bs$grepl(pattern="<br") %>% bs$any()){
+        if(fig$x$data[[i]]$hovertext %>% grepl(pattern="<br") %>% any()){
             fig$x$data[[i]]$hovertext <- NULL
         }
         
@@ -37,7 +38,7 @@ arruma_grafico_plotly <- function(ggplot2_grafico, subir_eixo_y = F, x=0,y=1){
     if(subir_eixo_y == T){
         y <- 1.055
         fig <- fig %>%
-            pl$layout(legend = list(
+            pl::layout(legend = list(
                 orientation = "h",
                 title=list(text=ggplot2_grafico$labels$colour),
                 x = x,
@@ -45,7 +46,7 @@ arruma_grafico_plotly <- function(ggplot2_grafico, subir_eixo_y = F, x=0,y=1){
             )
     } else {
         fig <- fig %>%
-            pl$layout(legend = list(
+            pl::layout(legend = list(
                 orientation = "h",
                 title=list(text=ggplot2_grafico$labels$colour),
                 x = x,

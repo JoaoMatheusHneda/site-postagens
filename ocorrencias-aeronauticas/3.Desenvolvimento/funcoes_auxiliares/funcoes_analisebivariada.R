@@ -1,10 +1,8 @@
 #------------------------------------------------------------------------------------------------------
-library(magrittr)
-box::use("bs" = base)
-box::use("dp" = dplyr)
-box::use("fc" = forcats)
-box::use("gg" = ggplot2)
-
+try(library(magrittr, include.only = c("%>%")), silent=TRUE)
+try(namespace::registerNamespace('dp', loadNamespace('dplyr')), silent=TRUE)
+try(namespace::registerNamespace('fc', loadNamespace('forcats')), silent=TRUE)
+try(namespace::registerNamespace('gg',loadNamespace('ggplot2')), silent=TRUE)
 
 # Variável Qualitativa X Variável Qualitativa
 calcula_tab_frequencia_bivariada <- function(tabela_de_entrada,nome_variavel1,nome_variavel2){
@@ -42,24 +40,24 @@ calcula_tab_frequencia_bivariada <- function(tabela_de_entrada,nome_variavel1,no
 
 calcula_tab_frequencia_bivariada_dplyr <- function(tabela_de_entrada,nome_variavel1,nome_variavel2){
     tabela_freq <- tabela_de_entrada %>% 
-        dp$select({{nome_variavel1}},{{nome_variavel2}}) %>% 
-        dp$group_by({{nome_variavel1}}, {{nome_variavel2}}) %>% 
-        dp$summarise(`Frequency` = dplyr::n()) %>% 
-        bs$as.data.frame()
+        dp::select({{nome_variavel1}},{{nome_variavel2}}) %>% 
+        dp::group_by({{nome_variavel1}}, {{nome_variavel2}}) %>% 
+        dp::summarise(`Frequency` = dplyr::n()) %>% 
+        as.data.frame()
     
     tabela_freq_aux <- (
-        dp$group_by(tabela_freq, {{nome_variavel1}}) %>%
-            dp$summarise(sum_Frequency = sum(`Frequency`)) %>% 
-            bs$as.data.frame()
+        dp::group_by(tabela_freq, {{nome_variavel1}}) %>%
+            dp::summarise(sum_Frequency = sum(`Frequency`)) %>% 
+            as.data.frame()
     )
     
-    tabela_saida <- dplyr::left_join(tabela_freq, tabela_freq_aux, by = as.character(substitute(nome_variavel1))) %>% 
-        dp$arrange({{nome_variavel1}}) %>%
-        dp$mutate(`Percentage`=(`Frequency`/`sum_Frequency`)*100) %>% 
-        bs$as.data.frame()
+    tabela_saida <- dp::left_join(tabela_freq, tabela_freq_aux, by = as.character(substitute(nome_variavel1))) %>% 
+        dp::arrange({{nome_variavel1}}) %>%
+        dp::mutate(`Percentage`=(`Frequency`/`sum_Frequency`)*100) %>% 
+        as.data.frame()
     
-    tabela_saida[,"Frequency"] <- bs$as.numeric(tabela_saida[,"Frequency"])
-    tabela_saida[,"sum_Frequency"] <- bs$as.numeric(tabela_saida[,"sum_Frequency"])
+    tabela_saida[,"Frequency"] <- as.numeric(tabela_saida[,"Frequency"])
+    tabela_saida[,"sum_Frequency"] <- as.numeric(tabela_saida[,"sum_Frequency"])
     
     return(tabela_saida)
 
@@ -73,17 +71,17 @@ grafico_tab_frequencia_bivariada2 <- function(table_count_prop,nome_variavel1,no
         print('Para adicionar as porcentagens, use size > 0!')
     }
     
-    gg_count_prop <- gg$ggplot(gg$aes_string(x=nome_variavel2,y='Frequency',fill=nome_variavel1),
+    gg_count_prop <- gg::ggplot(gg::aes_string(x=nome_variavel2,y='Frequency',fill=nome_variavel1),
                            data=table_count_prop) +
-        gg$theme_classic() +
-        gg$geom_col(position="dodge") #+
+        gg::theme_classic() +
+        gg::geom_col(position="dodge") #+
     if(legend==TRUE){
         gg_count_prop <- gg_count_prop +
-            gg$geom_text(gg$aes(label=paste0(Percentage,'%'),
+            gg::geom_text(gg::aes(label=paste0(Percentage,'%'),
                           y=Frequency+tx1*mean(Frequency)),
-                      position = gg$position_dodge(width = 0.9),
+                      position = gg::position_dodge(width = 0.9),
                       size=size) + 
-            gg$expand_limits(y=max(table_count_prop['Frequency'])*tx2)#+
+            gg::expand_limits(y=max(table_count_prop['Frequency'])*tx2)#+
         # coord_cartesian(xlim=c(table_count_prop[[nome_variavel2]][1],
         #                       table_count_prop[[nome_variavel2]][15]))
         # coord_flip(xlim=c(rev(table_count_prop[[nome_variavel2]])[15],
@@ -105,21 +103,21 @@ grafico_tab_frequencia_bivariada2 <- function(table_count_prop,nome_variavel1,no
 
 grafico_tab_frequencia_bivariada3 <- function(table_count_prop,nome_variavel1,nome_variavel2,size=2,tx1=0.025,tx2=0.00025,legend=FALSE){
     table_count_prop <- table_count_prop %>% 
-        dp$mutate(`PercentageFormat` = paste0(`Percentage`,'%'))
+        dp::mutate(`PercentageFormat` = paste0(`Percentage`,'%'))
     
     
-    gg_count_prop <- gg$ggplot(gg$aes_string(x=nome_variavel2,
+    gg_count_prop <- gg::ggplot(gg::aes_string(x=nome_variavel2,
                                        y='Frequency',
                                        fill=nome_variavel1,
                                        label="PercentageFormat"),
                             data=table_count_prop) +
-        gg$theme_classic() +
-        gg$geom_col(position='fill') +
-        gg$theme(legend.position = "bottom") +
-        gg$expand_limits(y=max(table_count_prop['Frequency'])*tx2)
+        gg::theme_classic() +
+        gg::geom_col(position='fill') +
+        gg::theme(legend.position = "bottom") +
+        gg::expand_limits(y=max(table_count_prop['Frequency'])*tx2)
     if(legend==TRUE){
         gg_count_prop <- gg_count_prop +
-            gg$geom_text(gg$aes(label=paste0(Percentage,'%'),
+            gg::geom_text(gg::aes(label=paste0(Percentage,'%'),
                               y=Frequency+tx1*Frequency
                               ),
                           position = 'fill',

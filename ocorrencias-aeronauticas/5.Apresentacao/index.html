@@ -36,6 +36,25 @@ class: center, middle, inverse, title-slide
 ---
 
 
+&lt;!-- Código para atualizar página ao abrir --&gt;
+
+&lt;script type='text/javascript'&gt;
+
+(function()
+{
+  if( window.localStorage )
+  {
+    if( !localStorage.getItem('firstLoad') )
+    {
+      localStorage['firstLoad'] = true;
+      window.location.reload();
+    }  
+    else
+      localStorage.removeItem('firstLoad');
+  }
+})();
+
+&lt;/script&gt;
 
 
 
@@ -230,8 +249,10 @@ possa afetar a segurança da operação.
 
 &lt;div style="position: relative; left: -30px; top: -25px;"&gt; 
 
-<div id="htmlwidget-dae03c768af34005353d" style="width:595px;height:252px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-dae03c768af34005353d">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-9.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+&lt;button onClick="window.location.reload();"&gt;Refresh chart&lt;/button&gt;
+
+<div id="htmlwidget-e068cb67789eebecb326" style="width:595px;height:252px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e068cb67789eebecb326">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-9.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
@@ -250,12 +271,18 @@ possa afetar a segurança da operação.
 
 ### Q2) O número de acidentes tem caído com o passar do tempo?
 
+&lt;div style="position: relative; left: 0px; top: -30px;"&gt; 
+
+&lt;button onClick="window.location.reload();"&gt;Refresh charts&lt;/button&gt;
+
+&lt;/div&gt;
+
 .pull-left[
 
-&lt;div style="position: relative; left: -30px; top: 0px;"&gt; 
+&lt;div style="position: relative; left: -30px; top: -30px;"&gt; 
 
-<div id="htmlwidget-e5f4860386ab8dcf88f5" style="width:610px;height:550px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e5f4860386ab8dcf88f5">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-11.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e36b0d8dac1e0bfe7bb3" style="width:610px;height:550px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e36b0d8dac1e0bfe7bb3">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-11.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
@@ -274,40 +301,45 @@ possa afetar a segurança da operação.
 
 ---
 
-### Q3) Ocorrem mais acidentes em estados de maior atividade econômica?
 
+### Q3) Ocorrem mais acidentes em estados de maior atividade econômica?
 
 
 .pull-left[
 
-&lt;div style="position: relative; left: 0px; top: -15px;"&gt; 
+&lt;div style="position: relative; left: 0px; top: -20px;"&gt; 
 
 
-<div id="htmlwidget-0e34c85285387ec601a8" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0e34c85285387ec601a8">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-13.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-536c8d93152f99c111e2" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-536c8d93152f99c111e2">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-13.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
 
 ]
-
-
 
 
 .pull-right[
 
-&lt;div style="position: relative; left: -30px; top: -15px;"&gt; 
+&lt;div style="position: relative; left: 400px; top: -35px;"&gt; 
 
-<div id="htmlwidget-5450c3720fae2d98534a" style="width:570px;height:450px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5450c3720fae2d98534a">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-14.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+&lt;button onClick="window.location.reload();"&gt;Refresh charts&lt;/button&gt;
+
+&lt;/div&gt;
+
+&lt;div style="position: relative; left: -30px; top: -35px;"&gt; 
+
+<div id="htmlwidget-1a22cbe0b298362d9838" style="width:570px;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1a22cbe0b298362d9838">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-14.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 ]
 
 
 
+&lt;div style="position: relative; left: 0px; top: -25px;"&gt; &lt;center&gt; Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de MT(~56.9%), RR(~55.6%), e SE(~50%) que têm as maiores proporções de acidentes. &lt;/center&gt; &lt;/div&gt;
 
-&gt; &lt;center&gt; Naturalmente, pelo fato de existir maior movimentação de aviões em estados de alta atividade econômica, esses mesmos têm as maiores quantidades de ocorrências. Porém, são os estados de MT(~56.9%), RR(~55.6%), e SE(~50%) que têm as maiores proporções de acidentes. &lt;/center&gt;
+
 
 
 ---
@@ -317,20 +349,26 @@ possa afetar a segurança da operação.
 
 .pull-left[
 
-&lt;div style="position: relative; left: 0px; top: -25px;"&gt; 
+&lt;div style="position: relative; left: 0px; top: -10px;"&gt; 
 
-<div id="htmlwidget-464ac4dc4bbd6667cec0" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-464ac4dc4bbd6667cec0">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-16.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-8c5a559f1db00b98d369" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8c5a559f1db00b98d369">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-16.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 &lt;/div&gt;
 
 ]
 
 .pull-right[
 
-&lt;div style="position: relative; left: 0px; top: -25px;"&gt; 
+&lt;div style="position: relative; left: 400px; top: -35px;"&gt; 
 
-<div id="htmlwidget-0feec84db21d3a09ba31" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0feec84db21d3a09ba31">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-17.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+&lt;button onClick="window.location.reload();"&gt;Refresh charts&lt;/button&gt;
+
+&lt;/div&gt;
+
+&lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
+
+<div id="htmlwidget-2eba1ec1bbcbde492aee" style="width:100%;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2eba1ec1bbcbde492aee">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-17.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
@@ -339,18 +377,18 @@ possa afetar a segurança da operação.
 
 
 
-&gt; &lt;center&gt; Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (51.8% &gt; 30.3%). &lt;/center&gt; 
+&lt;div style="position: relative; left: 0px; top: -10px;"&gt; &lt;center&gt; Não se observa uma quantidade maior de ocorrências nas saídas de pista, porém a proporção de ocorrências classificadas como acidentes é maior quando se tem uma ocorrência na saída de pista (51.8% &gt; 30.3%). &lt;/center&gt; &lt;/div&gt;
 
 
 ---
-### Q5) Quais são os tipos de ocorrência associadas com maior proporção de acidentes?
+### Q5) Quais são os tipos de ocorrência com maior (%) de acidentes?
 
 .pull-left[
 
-&lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
+&lt;div style="position: relative; left: 0px; top: -10px;"&gt; 
 
-<div id="htmlwidget-050dd68ebc86a221ea1f" style="width:535px;height:400px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-050dd68ebc86a221ea1f">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-19.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-71690f3bd1aac11df505" style="width:535px;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-71690f3bd1aac11df505">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-19.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
@@ -358,16 +396,22 @@ possa afetar a segurança da operação.
 
 .pull-right[
 
+&lt;div style="position: relative; left: 400px; top: -35px;"&gt; 
+
+&lt;button onClick="window.location.reload();"&gt;Refresh charts&lt;/button&gt;
+
+&lt;/div&gt;
+
 &lt;div style="position: relative; left: 0px; top: -35px;"&gt; 
 
-<div id="htmlwidget-294ef2a42d4dbefeb285" style="width:535px;height:400px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-294ef2a42d4dbefeb285">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-20.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-c6b278c9e50fcae0f261" style="width:535px;height:450px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c6b278c9e50fcae0f261">{"x":{"url":"../5.Apresentacao/index_files/figure-html//widgets/widget_unnamed-chunk-20.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 
 &lt;/div&gt;
 
 ]
 
-&gt; &lt;center&gt; É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc. &lt;/center&gt;
+&lt;div style="position: relative; left: 0px; top: -5px;"&gt; &lt;center&gt; É possível observar que existem vários tipos de ocorrência, porém alguns tipos são mais propensos a serem classificados como acidentes, tais como: Perda de controle em voo, pane seca, operação a baixa altitude, etc. &lt;/center&gt; &lt;/div&gt;
 
 
 ---
